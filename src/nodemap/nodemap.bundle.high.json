@@ -1,0 +1,652 @@
+{
+ "spec": "gc-class-nodemap/0.1",
+ "course": "high",
+ "version": {
+  "doc": "노드맵2_0_G2확정판 v2.2 (2026-08-03)",
+  "code": "src/core/nodes.ts"
+ },
+ "source": [
+  {
+   "file": "nodes_ts_SNAP_20260905_3d6d4292.ts",
+   "md5": "3d6d429237a7bdff7d334ac492a8c102"
+  },
+  {
+   "file": "노드맵2_0_G2확정판_v2_2_SNAP_20260905_027244d6.md",
+   "md5": "027244d696242cdc65c6350af79c8dc0"
+  }
+ ],
+ "copied_at": "2026-09-05",
+ "edges": "not_included — 본체 DB node_edges 단일 출처(R2 착수 전 별도 SNAP)",
+ "mids": [
+  {
+   "id": "P01",
+   "name": "수와 연산 기초",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P01-1",
+     "name": "사칙연산",
+     "backend_only": false
+    },
+    {
+     "id": "P01-2",
+     "name": "정수·유리수",
+     "backend_only": false
+    },
+    {
+     "id": "P01-3",
+     "name": "실수·무리수",
+     "backend_only": false
+    },
+    {
+     "id": "P01-4",
+     "name": "거듭제곱 기초",
+     "backend_only": false
+    },
+    {
+     "id": "P01-a",
+     "name": "항등식·대칭식",
+     "backend_only": false
+    },
+    {
+     "id": "P01-b",
+     "name": "다항식 나눗셈·나머지정리",
+     "backend_only": false
+    },
+    {
+     "id": "P01-c",
+     "name": "다항식과 정수",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "P02",
+   "name": "방정식과 부등식",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P02-1",
+     "name": "일차·연립방정식",
+     "backend_only": false
+    },
+    {
+     "id": "P02-2a",
+     "name": "이차방정식 풀이",
+     "backend_only": true
+    },
+    {
+     "id": "P02-2b",
+     "name": "판별식",
+     "backend_only": true
+    },
+    {
+     "id": "P02-2c",
+     "name": "근과 계수의 관계",
+     "backend_only": true
+    },
+    {
+     "id": "P02-3",
+     "name": "고차·무리방정식",
+     "backend_only": false
+    },
+    {
+     "id": "P02-4",
+     "name": "이차·연립부등식",
+     "backend_only": false
+    },
+    {
+     "id": "P02-5",
+     "name": "복소수",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "P03",
+   "name": "함수 기초",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P03-1",
+     "name": "함수의 개념",
+     "backend_only": false
+    },
+    {
+     "id": "P03-2",
+     "name": "일차·이차함수",
+     "backend_only": false
+    },
+    {
+     "id": "P03-3",
+     "name": "유리·무리함수",
+     "backend_only": false
+    },
+    {
+     "id": "P03-4",
+     "name": "합성·역함수",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "P04",
+   "name": "집합과 명제",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P04-1",
+     "name": "집합의 연산",
+     "backend_only": false
+    },
+    {
+     "id": "P04-2",
+     "name": "명제·역·이·대우",
+     "backend_only": false
+    },
+    {
+     "id": "P04-3",
+     "name": "필요·충분조건",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "P05",
+   "name": "도형 기초",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P05-1",
+     "name": "직선·원의 방정식",
+     "backend_only": false
+    },
+    {
+     "id": "P05-2",
+     "name": "두 직선의 관계",
+     "backend_only": false
+    },
+    {
+     "id": "P05-3",
+     "name": "도형의 이동",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "P06",
+   "name": "행렬",
+   "domain_group": "공통수학",
+   "subs": [
+    {
+     "id": "P06-1",
+     "name": "행렬의 뜻과 연산",
+     "backend_only": false
+    },
+    {
+     "id": "P06-2",
+     "name": "행렬의 곱셈·거듭제곱",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M01",
+   "name": "지수함수와 로그함수",
+   "domain_group": "대수",
+   "subs": [
+    {
+     "id": "B01",
+     "name": "거듭제곱근",
+     "backend_only": false
+    },
+    {
+     "id": "B02",
+     "name": "지수법칙",
+     "backend_only": false
+    },
+    {
+     "id": "B03",
+     "name": "로그의 뜻·성질",
+     "backend_only": false
+    },
+    {
+     "id": "B04",
+     "name": "상용로그",
+     "backend_only": false
+    },
+    {
+     "id": "B05",
+     "name": "지수함수 그래프",
+     "backend_only": false
+    },
+    {
+     "id": "B06",
+     "name": "로그함수 그래프",
+     "backend_only": false
+    },
+    {
+     "id": "B07",
+     "name": "지수·로그 방정식·부등식",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M02",
+   "name": "삼각함수",
+   "domain_group": "대수",
+   "subs": [
+    {
+     "id": "B08",
+     "name": "호도법·일반각과 삼각함수의 정의",
+     "backend_only": false
+    },
+    {
+     "id": "B09b",
+     "name": "삼각함수 상호관계·변형",
+     "backend_only": true
+    },
+    {
+     "id": "B10",
+     "name": "그래프와 주기",
+     "backend_only": false
+    },
+    {
+     "id": "B11",
+     "name": "사인법칙",
+     "backend_only": false
+    },
+    {
+     "id": "B12",
+     "name": "코사인법칙",
+     "backend_only": false
+    },
+    {
+     "id": "B13",
+     "name": "삼각형의 넓이",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M03",
+   "name": "수열",
+   "domain_group": "대수",
+   "subs": [
+    {
+     "id": "B14",
+     "name": "등차수열",
+     "backend_only": false
+    },
+    {
+     "id": "B15",
+     "name": "등비수열",
+     "backend_only": false
+    },
+    {
+     "id": "B16a",
+     "name": "Σ의 성질",
+     "backend_only": true
+    },
+    {
+     "id": "B16b",
+     "name": "일반항 계산·활용",
+     "backend_only": true
+    },
+    {
+     "id": "B17",
+     "name": "귀납법·점화식",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M04",
+   "name": "함수의 극한과 연속",
+   "domain_group": "미적분Ⅰ",
+   "subs": [
+    {
+     "id": "B18",
+     "name": "함수의 극한과 그 성질",
+     "backend_only": false
+    },
+    {
+     "id": "B21",
+     "name": "함수의 연속",
+     "backend_only": false
+    },
+    {
+     "id": "B22",
+     "name": "연속함수 성질(사잇값)",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M05a",
+   "name": "미분의 기본",
+   "domain_group": "미적분Ⅰ",
+   "subs": [
+    {
+     "id": "B23",
+     "name": "미분계수·평균변화율",
+     "backend_only": false
+    },
+    {
+     "id": "B24",
+     "name": "미분가능성·연속성",
+     "backend_only": false
+    },
+    {
+     "id": "B25",
+     "name": "도함수·미분법",
+     "backend_only": false
+    },
+    {
+     "id": "B27",
+     "name": "평균값 정리",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M05b",
+   "name": "미분의 활용",
+   "domain_group": "미적분Ⅰ",
+   "subs": [
+    {
+     "id": "B26a",
+     "name": "접선 기본(접점 주어짐)",
+     "backend_only": true
+    },
+    {
+     "id": "B26b",
+     "name": "외부점·접선 개수 응용",
+     "backend_only": true
+    },
+    {
+     "id": "B28a",
+     "name": "극대·극소 판정",
+     "backend_only": true
+    },
+    {
+     "id": "B28b",
+     "name": "그래프 개형·활용",
+     "backend_only": true
+    },
+    {
+     "id": "B30",
+     "name": "속도·가속도(미분)",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M06",
+   "name": "다항함수의 적분법",
+   "domain_group": "미적분Ⅰ",
+   "subs": [
+    {
+     "id": "B31",
+     "name": "부정적분",
+     "backend_only": false
+    },
+    {
+     "id": "B32",
+     "name": "정적분",
+     "backend_only": false
+    },
+    {
+     "id": "B33",
+     "name": "정적분으로 정의된 함수",
+     "backend_only": false
+    },
+    {
+     "id": "B34a",
+     "name": "축과의 넓이",
+     "backend_only": true
+    },
+    {
+     "id": "B34b",
+     "name": "두 곡선 사이·분할",
+     "backend_only": true
+    },
+    {
+     "id": "B35",
+     "name": "속도와 거리(적분)",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M07",
+   "name": "경우의 수",
+   "domain_group": "확률과통계",
+   "subs": [
+    {
+     "id": "B36",
+     "name": "중복순열",
+     "backend_only": false
+    },
+    {
+     "id": "B37",
+     "name": "같은 것이 있는 순열",
+     "backend_only": false
+    },
+    {
+     "id": "B38",
+     "name": "중복조합",
+     "backend_only": false
+    },
+    {
+     "id": "B39",
+     "name": "이항정리",
+     "backend_only": false
+    },
+    {
+     "id": "B51",
+     "name": "합·곱의 법칙",
+     "backend_only": false
+    },
+    {
+     "id": "B52",
+     "name": "순열·조합",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M08",
+   "name": "확률",
+   "domain_group": "확률과통계",
+   "subs": [
+    {
+     "id": "B40",
+     "name": "확률의 뜻",
+     "backend_only": false
+    },
+    {
+     "id": "B41",
+     "name": "덧셈정리",
+     "backend_only": false
+    },
+    {
+     "id": "B42",
+     "name": "조건부확률",
+     "backend_only": false
+    },
+    {
+     "id": "B43",
+     "name": "독립과 종속",
+     "backend_only": false
+    },
+    {
+     "id": "B44",
+     "name": "독립시행",
+     "backend_only": false
+    }
+   ]
+  },
+  {
+   "id": "M09",
+   "name": "통계",
+   "domain_group": "확률과통계",
+   "subs": [
+    {
+     "id": "B45a",
+     "name": "확률분포표·확률",
+     "backend_only": true
+    },
+    {
+     "id": "B45b",
+     "name": "기댓값·분산",
+     "backend_only": true
+    },
+    {
+     "id": "B46",
+     "name": "이항분포",
+     "backend_only": false
+    },
+    {
+     "id": "B47",
+     "name": "정규분포·표준화",
+     "backend_only": false
+    },
+    {
+     "id": "B48",
+     "name": "표본평균의 분포",
+     "backend_only": false
+    },
+    {
+     "id": "B49",
+     "name": "모평균의 추정",
+     "backend_only": false
+    },
+    {
+     "id": "B50",
+     "name": "모비율의 추정",
+     "backend_only": false
+    }
+   ]
+  }
+ ],
+ "common_basic": [
+  {
+   "id": "DF01",
+   "name": "정수·유리수 부호 연산",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF02",
+   "name": "문자식·일차식",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF03",
+   "name": "지수법칙 기초",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF04",
+   "name": "다항식 곱셈·인수분해",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF05",
+   "name": "제곱근 계산",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF06",
+   "name": "일차·연립방정식",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF07",
+   "name": "일차부등식",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF08",
+   "name": "이차방정식 기초",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DF09",
+   "name": "비·비율·백분율",
+   "subgroup": "DF"
+  },
+  {
+   "id": "DC01",
+   "name": "좌표평면과 순서쌍",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC02",
+   "name": "함수 개념·일차함수",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC03",
+   "name": "그래프↔방정식의 해",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC04",
+   "name": "이차함수 그래프",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC05",
+   "name": "삼각비",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC06",
+   "name": "피타고라스·거리",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC07",
+   "name": "경우의 수 기초 셈",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DC08",
+   "name": "자료의 정리와 대푯값",
+   "subgroup": "DC"
+  },
+  {
+   "id": "DW01",
+   "name": "문장→일차식",
+   "subgroup": "DW"
+  },
+  {
+   "id": "DW02",
+   "name": "문장→이차식·함수",
+   "subgroup": "DW"
+  }
+ ],
+ "dead_labels": [
+  "B29",
+  "B36-1",
+  "TRIG_SECTOR_TODO",
+  "M05",
+  "P02-2",
+  "B28",
+  "B09",
+  "B26",
+  "B45",
+  "B34",
+  "B16",
+  "B19",
+  "B20",
+  "B09a"
+ ],
+ "counts": {
+  "mids": 16,
+  "subs_under_mid": 80,
+  "common_basic": 19
+ }
+}

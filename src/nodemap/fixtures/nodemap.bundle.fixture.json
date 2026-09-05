@@ -1,0 +1,27 @@
+{
+  "spec": "gc-class-nodemap/0.1",
+  "course": "high",
+  "version": "fixture",
+  "copied_at": "1970-01-01",
+  "edges": "not_included",
+  "mids": [
+    {
+      "id": "X01",
+      "name": "픽스처_중위단원_하나",
+      "domain_group": "픽스처",
+      "subs": [
+        { "id": "X01-1", "name": "픽스처_하위노드_하나", "backend_only": false },
+        { "id": "X01-2", "name": "픽스처_하위노드_둘", "backend_only": false }
+      ]
+    },
+    {
+      "id": "X02",
+      "name": "픽스처_중위단원_둘",
+      "domain_group": "픽스처",
+      "subs": [{ "id": "X02-1", "name": "픽스처_하위노드_셋", "backend_only": false }]
+    }
+  ],
+  "common_basic": [],
+  "dead_labels": [],
+  "counts": { "mids": 2, "subs_under_mid": 3, "common_basic": 0 }
+}

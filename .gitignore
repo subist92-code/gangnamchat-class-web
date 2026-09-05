@@ -1,0 +1,29 @@
+# 시크릿 — H-6 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# 의존성 · 빌드
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Supabase 로컬
+.supabase/
+supabase/.temp/
+
+# 테스트 산출물
+playwright-report/
+test-results/
+blob-report/
+coverage/
+
+# 에디터 · OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

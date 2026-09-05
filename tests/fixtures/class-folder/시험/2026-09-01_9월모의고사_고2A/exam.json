@@ -1,0 +1,16 @@
+{
+  "spec": "gc-class-exam/0.1",
+  "exam_id": "E-2026-0001",
+  "title": "9월 모의고사",
+  "class_ref": "2026-2_고2A",
+  "date": "2026-09-01",
+  "time_limit_min": 50,
+  "items": [
+    { "no": 1, "problem_id": "Q-2026-0001", "points": 3, "format": "mc5", "is_killer": false },
+    { "no": 2, "problem_id": "Q-2026-0002", "points": 4, "format": "short", "is_killer": false }
+  ],
+  "scope": { "mid_nodes": ["X01"], "difficulty_ladder": [2, 3] },
+  "watermark": true,
+  "generated_at": "2026-09-01T09:00:00+09:00",
+  "status": "printed"
+}
