@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { limits } from '../config/limits';
 import { unsupportedBrowserNotice } from '../config/ui';
 import { createClassFolder } from '../folder/classFolder';
@@ -7,7 +7,14 @@ import { sha256Hex } from '../folder/FolderAdapter';
 import { ROOT } from '../folder/paths';
 import { readReceipts } from '../llm/receipts';
 import { runCasSelfTest, type SelfTestResult } from '../cas/pyodide';
-import { callPassthrough, isSupabaseConfigured, sendMagicLink } from '../auth/supabase';
+import {
+  callPassthrough,
+  currentEmail,
+  isSupabaseConfigured,
+  onAuthChange,
+  sendMagicLink,
+  signOut,
+} from '../auth/supabase';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
 import type { ReceiptEntry } from '../folder/schemas/receipts';
@@ -25,6 +32,26 @@ export function SettingsPage() {
   const [hashLine, setHashLine] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [canary, setCanary] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // 매직링크로 돌아온 순간에도 화면이 스스로 바뀌어야 한다 — 새로고침을 시키지 않는다.
+  useEffect(() => {
+    let alive = true;
+    void currentEmail().then((mail) => {
+      if (!alive) return;
+      setSignedIn(mail);
+      setAuthChecked(true);
+    });
+    const stop = onAuthChange((mail) => {
+      setSignedIn(mail);
+      setAuthChecked(true);
+    });
+    return () => {
+      alive = false;
+      stop();
+    };
+  }, []);
 
   const run = async (fn: () => Promise<void>) => {
     setError(null);
@@ -267,27 +294,60 @@ export function SettingsPage() {
           <Notice tone="warn">Supabase 설정(.env.local)이 없어 통로 함수를 부를 수 없습니다.</Notice>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <input
-            type="email"
-            className="w-64 rounded border border-stone-300 px-2 py-1 text-sm"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="선생님 이메일"
-          />
+          {!authChecked ? (
+            <span className="text-xs text-stone-500">로그인 상태 확인 중…</span>
+          ) : signedIn !== null ? (
+            <>
+              <span className="text-xs text-primary">로그인됨 · {signedIn}</span>
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  run(async () => {
+                    await signOut();
+                    setMessage("로그아웃했습니다.");
+                  })
+                }
+              >
+                로그아웃
+              </Button>
+            </>
+          ) : (
+            <>
+              <input
+                type="email"
+                className="w-64 rounded border border-stone-300 px-2 py-1 text-sm"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="선생님 이메일"
+              />
+              <Button
+                variant="ghost"
+                disabled={!isSupabaseConfigured()}
+                onClick={() =>
+                  run(async () => {
+                    await sendMagicLink(email);
+                    setMessage(
+                      "로그인 링크를 보냈습니다. 메일함에서 링크를 누르면 이 화면으로 돌아옵니다.",
+                    );
+                  })
+                }
+              >
+                로그인 링크 받기
+              </Button>
+            </>
+          )}
           <Button
-            variant="ghost"
-            disabled={!isSupabaseConfigured()}
-            onClick={() => run(async () => {
-              await sendMagicLink(email);
-              setMessage('로그인 링크를 보냈습니다. 메일함을 확인해 주세요.');
-            })}
+            disabled={!isSupabaseConfigured() || signedIn === null}
+            onClick={passthroughSmoke}
           >
-            로그인 링크 받기
-          </Button>
-          <Button disabled={!isSupabaseConfigured()} onClick={passthroughSmoke}>
             통로 함수 카나리 호출
           </Button>
         </div>
+        {authChecked && signedIn === null && isSupabaseConfigured() && (
+          <p className="mt-2 text-xs text-stone-500">
+            통로 함수는 로그인한 선생만 부를 수 있습니다(verify_jwt). 먼저 로그인하세요.
+          </p>
+        )}
         {canary !== null && (
           <p className="mt-2 text-xs text-stone-600">
             이번 카나리 문자열: <code>{canary}</code> — 함수 로그에서 이 문자열이 0건이어야 합니다.
