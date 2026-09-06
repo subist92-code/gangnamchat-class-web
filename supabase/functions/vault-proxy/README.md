@@ -66,6 +66,25 @@ publishable 키(브라우저 번들에 실려 나가는 공개 키)만으로 플
 `sub` 를 확인한다. 서명은 플랫폼이 이미 본다 — 위조 JWT 는 `apikey` 를 함께 보내도
 401 로 막히는 것을 실측했다.
 
+## 배포 해시(자리 G · C-039 ②)
+
+배포할 때 시크릿에 그 커밋 해시를 넣는다:
+
+```bash
+supabase secrets set PASSTHROUGH_BUILD=$(git rev-parse --short HEAD) --project-ref <PROJECT_REF>
+supabase functions deploy vault-proxy --project-ref <PROJECT_REF>
+```
+
+함수가 응답 헤더 `x-passthrough-build` 로 돌려주고 설정 화면이 표시한다.
+**CORS 노출 목록에 올려야 브라우저가 읽는다** — `access-control-expose-headers` 가 없으면
+헤더는 오지만 스크립트에서 보이지 않는다. 확인은 OPTIONS 한 번이면 된다(모델 호출 0):
+
+```bash
+curl -s -i -X OPTIONS https://<PROJECT_REF>.supabase.co/functions/v1/vault-proxy | grep -i x-passthrough-build
+```
+
+시크릿은 배포마다 손으로 갱신한다 — 자동 산출은 후속이다.
+
 ## 검사 기록 2026-09-06
 
 ### 버킷(§2-1)
