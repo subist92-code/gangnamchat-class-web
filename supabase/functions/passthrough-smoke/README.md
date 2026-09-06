@@ -12,11 +12,21 @@ supabase secrets set MODEL_SMOKE=<모델 ID> --project-ref <PROJECT_REF>
 ## 무저장 검사 (카나리)
 
 1. 설정 화면에서 「통로 함수 카나리 호출」을 누른다. 화면이 이번 카나리 문자열을 보여 준다.
-2. 로그에서 그 문자열을 찾는다:
+2. 로그에서 그 문자열을 찾는다. 대시보드 Logs Explorer 에서 SQL 로 조회한다:
 
-```bash
-supabase functions logs passthrough-smoke --project-ref <PROJECT_REF>
+   `https://supabase.com/dashboard/project/<PROJECT_REF>/logs/explorer`
+
+```sql
+select source, timestamp, event_message
+from logs
+where position(event_message, 'CANARY') > 0
+order by timestamp desc
 ```
+
+   카나리는 모두 `CANARY-` 접두어를 달고 나오므로 접두어 하나로 전수 검사가 된다 —
+   이번 문자열을 따로 넣지 않아도 되고, 지난 호출까지 함께 걸린다.
+
+   `supabase functions logs` 는 쓰지 않는다. CLI 에 없는 명령이다(2.84.2 · 2.116.0 에서 확인).
 
 3. 0건이어야 통과다.
 
@@ -25,7 +35,7 @@ supabase functions logs passthrough-smoke --project-ref <PROJECT_REF>
 「0건」이 검사가 살아 있다는 뜻인지 증명해야 한다.
 
 1. `index.ts` 의 `Deno.serve` 첫 줄에 임시로 `console.log(await req.clone().text())` 를 넣고 배포한다.
-2. 다시 호출하고 로그에서 카나리 문자열이 **잡히는지** 확인한다(1건 이상이어야 한다).
+2. 다시 호출하고 위와 같은 조회로 카나리 문자열이 **잡히는지** 확인한다(1건 이상이어야 한다).
 3. 그 줄을 지우고 다시 배포한다.
 4. 다시 호출하고 로그에서 **0건**을 확인한다.
 
@@ -50,7 +60,7 @@ supabase functions logs passthrough-smoke --project-ref <PROJECT_REF>
 
 ### 조회 방법
 
-`supabase functions logs` 는 CLI 2.84.2 에 없는 하위 명령이다. 실제로는 로그 스트림을
+`supabase functions logs` 는 CLI 에 없는 하위 명령이다(2.84.2 · 2.116.0 에서 확인). 실제로는 로그 스트림을
 직접 조회했다 — 카나리는 모두 `CANARY-` 접두어를 달고 나오므로 접두어 하나로 전수 검사가 된다.
 조회 범위는 마지막 24시간 · 전 소스였고, 결과는 위 표의 양성 대조 1건뿐이었다.
 
