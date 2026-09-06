@@ -15,6 +15,17 @@ export const limits = {
   /** 전사 응답 max_tokens */
   transcribeMaxTokens: 8000,
 
+  /** S4 검증 동시 호출 수(지시서 02 §3-2 · 단원별 순차 = 캐시 적중) */
+  verifyConcurrency: 1,
+  /** 검증 응답 max_tokens — 함수 쪽 상한과 짝이다 */
+  verifyMaxTokens: 4096,
+  /** cas_script 1건 실행 제한 시간(ms). 넘으면 Worker 를 terminate 한다 */
+  casTimeoutMs: 20000,
+  /** 키 기억하기 — PBKDF2 반복 수(지시서 02 §4) */
+  keyKdfIterations: 310000,
+  /** 잠금 해제 연속 실패 허용 횟수. 넘으면 암호문을 지운다 */
+  keyUnlockMaxAttempts: 5,
+
   /** 홈 하부 타일 최대 개수(대시보드 §3 · 관찰 조정 대상) */
   homeTileMax: 4,
 
