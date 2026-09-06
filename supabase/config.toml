@@ -5,3 +5,7 @@ project_id = "gangnamchat-class"
 [functions.passthrough-smoke]
 # 로그인한 선생만 부를 수 있다(스모크 4 통과 기준).
 verify_jwt = true
+
+[functions.vault-proxy]
+# 금고 통로 본편. 로그인한 선생만 부를 수 있다(지시서 02 §2-4).
+verify_jwt = true

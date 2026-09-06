@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "config-layer": "node scripts/check-config-layer.mjs",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run config-layer"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run config-layer && npm run no-vault",
+    "no-vault": "node scripts/check-no-vault.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.0",
