@@ -15,6 +15,13 @@ import {
   sendMagicLink,
   signOut,
 } from '../auth/supabase';
+import {
+  forgetKey,
+  hasRememberedKey,
+  indexedDbStore,
+  rememberKey,
+  unlockKey,
+} from '../auth/keyVault';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
 import type { ReceiptEntry } from '../folder/schemas/receipts';
@@ -34,6 +41,76 @@ export function SettingsPage() {
   const [canary, setCanary] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [rememberOn, setRememberOn] = useState(false);
+  const [remembered, setRemembered] = useState(false);
+  const [vaultPassword, setVaultPassword] = useState('');
+
+  // 앱을 열 때 기억된 키가 있는지 본다 — 있으면 잠금 해제 자리가 열린다(§4).
+  useEffect(() => {
+    let alive = true;
+    void hasRememberedKey(indexedDbStore).then((has) => {
+      if (!alive) return;
+      setRemembered(has);
+      setRememberOn(has);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const toggleRemember = async (on: boolean) => {
+    setRememberOn(on);
+    setError(null);
+    setMessage(null);
+    // 토글을 끄면 즉시 지운다 — 「끔」과 「남아 있음」이 어긋나면 안 된다(§4).
+    if (!on) {
+      await forgetKey(indexedDbStore);
+      setRemembered(false);
+      setVaultPassword('');
+      setMessage('기억한 키를 지웠습니다.');
+    }
+  };
+
+  const saveRemembered = () =>
+    run(async () => {
+      if (apiKey.length === 0) throw new Error('먼저 API 키를 입력하세요.');
+      await rememberKey(indexedDbStore, apiKey, vaultPassword);
+      setRemembered(true);
+      setVaultPassword('');
+      setMessage('이 브라우저에 키를 기억했습니다. 비밀번호는 저장하지 않았습니다.');
+    });
+
+  const unlock = () =>
+    run(async () => {
+      const result = await unlockKey(indexedDbStore, vaultPassword);
+      setVaultPassword('');
+      if (result.ok) {
+        setApiKey(result.apiKey);
+        setMessage('잠금을 풀었습니다.');
+        return;
+      }
+      if (result.reason === 'erased') {
+        setRemembered(false);
+        setRememberOn(false);
+        throw new Error(
+          `비밀번호를 ${limits.keyUnlockMaxAttempts}회 틀려 기억한 키를 지웠습니다. 키를 다시 넣어 주세요.`,
+        );
+      }
+      if (result.reason === 'wrong') {
+        throw new Error(`비밀번호가 다릅니다. ${result.remaining}회 남았습니다.`);
+      }
+      setRemembered(false);
+      throw new Error('기억된 키가 없습니다.');
+    });
+
+  const forget = () =>
+    run(async () => {
+      await forgetKey(indexedDbStore);
+      setRemembered(false);
+      setRememberOn(false);
+      clearApiKey();
+      setMessage('기억한 키를 지웠습니다.');
+    });
 
   // 매직링크로 돌아온 순간에도 화면이 스스로 바뀌어야 한다 — 새로고침을 시키지 않는다.
   useEffect(() => {
@@ -200,8 +277,8 @@ export function SettingsPage() {
 
       <Card title="API 키 (BYOK)">
         <p className="mb-2 text-stone-600">
-          키는 이 브라우저 메모리에만 있습니다. 새로고침하면 사라지고, 폴더에도 우리 서버에도
-          저장되지 않습니다.
+          키는 이 브라우저 메모리에만 있습니다. 폴더에도 우리 서버에도 저장되지 않습니다.
+          「기억하기」를 켜지 않으면 새로고침할 때 사라집니다.
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -218,6 +295,77 @@ export function SettingsPage() {
           {apiKey.length >= 4 && (
             <span className="text-xs text-stone-500">끝 4자리 …{apiKey.slice(-4)}</span>
           )}
+          {/* A-1 — 저장 버튼은 없다. 적었으면 그 순간 적용된 것이다. */}
+          {apiKey.length > 0 && (
+            <span className="text-xs text-primary" data-testid="key-applied">
+              적용됨 ✓ · {remembered ? '이 브라우저에 기억됨' : '새로고침 전까지 유효'}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-4 border-t border-stone-100 pt-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              data-testid="remember-toggle"
+              checked={rememberOn}
+              onChange={(e) => void toggleRemember(e.target.checked)}
+            />
+            이 브라우저에 키 기억(비밀번호 암호화)
+          </label>
+
+          {rememberOn && !remembered && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <input
+                type="password"
+                className="w-56 rounded border border-stone-300 px-2 py-1 text-sm"
+                placeholder="암호화 비밀번호"
+                data-testid="remember-password"
+                value={vaultPassword}
+                onChange={(e) => setVaultPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+              <Button onClick={() => void saveRemembered()}>기억시키기</Button>
+            </div>
+          )}
+
+          {rememberOn && (
+            <Notice tone="warn">
+              학원 공용 PC에서는 켜지 마세요 — 비밀번호를 아는 사람은 키를 쓸 수 있습니다.
+            </Notice>
+          )}
+
+          {remembered && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {apiKey.length === 0 ? (
+                <>
+                  <span className="text-xs text-stone-600">
+                    이 브라우저에 기억된 키가 있습니다. 비밀번호로 잠금을 푸세요.
+                  </span>
+                  <input
+                    type="password"
+                    className="w-56 rounded border border-stone-300 px-2 py-1 text-sm"
+                    placeholder="비밀번호"
+                    data-testid="unlock-password"
+                    value={vaultPassword}
+                    onChange={(e) => setVaultPassword(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                  <Button onClick={() => void unlock()}>잠금 해제</Button>
+                </>
+              ) : (
+                <span className="text-xs text-stone-600">잠금이 풀려 있습니다.</span>
+              )}
+              <Button variant="ghost" onClick={() => void forget()}>
+                기억 지우기
+              </Button>
+            </div>
+          )}
+
+          <p className="mt-2 text-xs text-stone-500">
+            비밀번호는 어디에도 저장하지 않습니다. 잊으면 되찾을 수 없고, 키를 다시 넣어야 합니다.
+            비밀번호를 {limits.keyUnlockMaxAttempts}회 연속 틀리면 기억한 키를 지웁니다.
+          </p>
         </div>
       </Card>
 
