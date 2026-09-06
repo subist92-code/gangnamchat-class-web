@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { chatDeferredNotice, chatTabs, tileCopy, type ChatTabId } from '../config/ui';
 import { limits } from '../config/limits';
 import { findExams } from '../folder/bank';
-import { pendingCount } from '../intake/transcriptStore';
+import { answerCheckCount, awaitingVerifyCount, pendingCount, verifiable } from '../intake/transcriptStore';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
 
@@ -42,7 +42,40 @@ export function HomePage() {
   const tiles = useMemo<Tile[]>(() => {
     const out: Tile[] = [];
     const pending = pendingCount(transcripts);
-    if (pending > 0) out.push({ label: tileCopy.transcriptPending(pending), route: '/exam' });
+    if (pending > 0) {
+      const batch = transcripts.find((t) => t.items.some((i) => i.confirmed_at === null));
+      out.push({
+        label: tileCopy.transcriptPending(pending),
+        route: batch === undefined ? '/exam' : `/exam?step=review&batch=${batch.batch_id}`,
+      });
+    }
+
+    // 검증 대기 — 단원까지 골라 둔 문항이 판정을 기다린다(§3-5).
+    const awaiting = awaitingVerifyCount(transcripts);
+    if (awaiting > 0) {
+      const batch = transcripts.find((t) => verifiable(t).length > 0);
+      out.push({
+        label: tileCopy.awaitingVerify(awaiting),
+        route: batch === undefined ? '/exam' : `/exam?step=verdict&batch=${batch.batch_id}`,
+      });
+    }
+
+    // 정답표 확인 — 결함이 아니라 선생 판정 대기다(기획 §7-4).
+    const answers = answerCheckCount(transcripts);
+    if (answers > 0) {
+      const batch = transcripts.find((t) =>
+        t.items.some(
+          (i) =>
+            (i.verdict?.issues ?? []).some((x) => x.kind === 'answer_mismatch') &&
+            (i.s3?.answer_decision ?? null) === null,
+        ),
+      );
+      out.push({
+        label: tileCopy.answerCheck(answers),
+        route: batch === undefined ? '/exam' : `/exam?step=verdict&batch=${batch.batch_id}`,
+      });
+    }
+
     out.push(...ungraded);
     return out.slice(0, limits.homeTileMax);
   }, [transcripts, ungraded]);

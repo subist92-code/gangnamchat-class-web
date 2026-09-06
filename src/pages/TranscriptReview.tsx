@@ -1,34 +1,53 @@
 import { useState } from 'react';
 import type { IntakePage } from '../intake/types';
-import type { TranscriptTmp } from '../folder/schemas/transcript';
+import type { FormatType } from '../folder/schemas/common';
+import type { TranscriptItem, TranscriptTmp } from '../folder/schemas/transcript';
 import {
   allConfirmed,
   batchTranscriptionDiff,
   confirmItem,
+  defaultS3,
   editItem,
+  s3Open,
   saveTranscript,
+  setS3,
+  verifiable,
 } from '../intake/transcriptStore';
 import { splitItem, mergeWithNext } from '../intake/boundaries';
+import { loadBundle } from '../nodemap/loader';
+import { midOptions, unitSlotFor } from '../nodemap/unitSlot';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
 import { MathText } from '../ui/Math';
 
+const FORMATS: readonly FormatType[] = ['mc5', 'combo', 'short', 'essay'];
+
 /**
- * 가-2 전사 확인(S2).
+ * 가-2 전사 확인(S2) + 단원 · 형식 확정(S3).
  * 좌 원본 · 우 문항별 텍스트(KaTeX 렌더 + 원문 편집).
- * 「확인」은 선생이 누른다 — 자동 확인 금지. 미확인 문항은 S3 로 못 간다.
+ * 「확인」은 선생이 누른다 — 자동 확인 금지. **S3 행은 확인된 문항에만 열린다.**
+ * 검증(S4·S5)은 묶음 단위라 리듬이 달라 가-3 으로 화면을 가른다.
  */
 export function TranscriptReview({
   transcript,
   pages,
   onChange,
+  onStartVerify,
 }: {
   transcript: TranscriptTmp;
   pages: readonly IntakePage[];
   onChange: (t: TranscriptTmp) => void;
+  onStartVerify?: () => void;
 }) {
   const { adapter, refreshTranscripts } = useSession();
   const [error, setError] = useState<string | null>(null);
+
+  const bundle = loadBundle(transcript.course);
+  const mids = midOptions(bundle, transcript.course);
+  const unitFor = (mid: string | null) => unitSlotFor(bundle, transcript.course, mid);
+
+  /** S3 값을 고칠 때 쓰는 바탕 — 묶음 기본값을 상속한다(§3-1). */
+  const baseS3 = (item: TranscriptItem) => defaultS3(transcript, item, unitFor);
 
   const persist = async (next: TranscriptTmp) => {
     onChange(next);
@@ -43,6 +62,7 @@ export function TranscriptReview({
 
   const pending = transcript.items.filter((i) => i.confirmed_at === null).length;
   const ready = allConfirmed(transcript);
+  const verifyCount = verifiable(transcript).length;
 
   return (
     <Card title="가-2 전사 확인">
@@ -66,6 +86,8 @@ export function TranscriptReview({
       <div className="flex flex-col gap-4">
         {transcript.items.map((item, index) => {
           const page = pages.find((p) => p.pageNumber === item.page);
+          const base = baseS3(item);
+          const s3 = item.s3 ?? base;
           return (
             <div
               key={item.tmp_no}
@@ -161,21 +183,163 @@ export function TranscriptReview({
                     다음 문항과 합치기
                   </Button>
                 </div>
+
+                {s3Open(item) && (
+                  <div
+                    className="mt-1 rounded border border-stone-200 bg-primary-tint p-2"
+                    data-testid={`s3-${item.tmp_no}`}
+                  >
+                    <div className="mb-2 text-xs font-medium text-primary">단원 · 형식 확정</div>
+
+                    {s3 === null ? (
+                      <p className="text-xs text-chart-actual">
+                        중위 단원을 고르세요 — 묶음 기본값이 없어 검증으로 넘어갈 수 없습니다.
+                      </p>
+                    ) : null}
+
+                    <div className="flex flex-wrap items-end gap-2">
+                      <label className="flex flex-col text-xs text-stone-600">
+                        중위 단원
+                        <select
+                          className="mt-1 rounded border border-stone-300 px-2 py-1 text-sm"
+                          data-testid={`s3-mid-${item.tmp_no}`}
+                          value={s3?.mid ?? ''}
+                          onChange={(e) => {
+                            const mid = e.target.value;
+                            const unit = unitFor(mid);
+                            if (unit === null) return;
+                            const next = base ?? {
+                              mid,
+                              unit,
+                              format: item.format_guess,
+                              has_answer: item.edited.answer_raw !== null,
+                              teacher_note: null,
+                              answer_decision: null,
+                            };
+                            void persist(setS3(transcript, item.tmp_no, { mid, unit }, next));
+                          }}
+                        >
+                          <option value="">— 고르세요 —</option>
+                          {mids.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.id} {m.name}
+                              {m.commonBasic ? ' (공통기초)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="flex flex-col text-xs text-stone-600">
+                        형식
+                        <select
+                          className="mt-1 rounded border border-stone-300 px-2 py-1 text-sm"
+                          data-testid={`s3-format-${item.tmp_no}`}
+                          value={s3?.format ?? item.format_guess}
+                          disabled={s3 === null}
+                          onChange={(e) => {
+                            if (base === null) return;
+                            void persist(
+                              setS3(
+                                transcript,
+                                item.tmp_no,
+                                { format: e.target.value as FormatType },
+                                base,
+                              ),
+                            );
+                          }}
+                        >
+                          {FORMATS.map((f) => (
+                            <option key={f} value={f}>
+                              {f}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="flex items-center gap-1 text-xs text-stone-600">
+                        <input
+                          type="checkbox"
+                          data-testid={`s3-answer-${item.tmp_no}`}
+                          checked={s3?.has_answer ?? false}
+                          disabled={s3 === null}
+                          onChange={(e) => {
+                            if (base === null) return;
+                            void persist(
+                              setS3(
+                                transcript,
+                                item.tmp_no,
+                                { has_answer: e.target.checked },
+                                base,
+                              ),
+                            );
+                          }}
+                        />
+                        정답 있음
+                      </label>
+                    </div>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                      {s3 !== null && (
+                        <span className="rounded bg-white px-2 py-0.5 text-stone-600">
+                          단원 블록 {s3.unit}
+                        </span>
+                      )}
+                      {s3?.unit === 'B-D' && (
+                        <span className="rounded bg-white px-2 py-0.5 text-stone-600">
+                          공통기초 D 범위로 검증합니다
+                        </span>
+                      )}
+                      {s3?.format === 'essay' && (
+                        <span className="rounded bg-white px-2 py-0.5 text-stone-600">
+                          서술형 → 트랙2 예고(검증만 · 미끼 없음)
+                        </span>
+                      )}
+                    </div>
+
+                    <input
+                      className="mt-2 w-full rounded border border-stone-300 px-2 py-1 text-xs"
+                      placeholder="선생 메모(선택) — 검증 입력에만 쓰이고 문항에 저장되지 않습니다"
+                      data-testid={`s3-note-${item.tmp_no}`}
+                      value={s3?.teacher_note ?? ''}
+                      disabled={s3 === null}
+                      onChange={(e) => {
+                        if (base === null) return;
+                        onChange(
+                          setS3(
+                            transcript,
+                            item.tmp_no,
+                            { teacher_note: e.target.value.length > 0 ? e.target.value : null },
+                            base,
+                          ),
+                        );
+                      }}
+                      onBlur={() => void persist(transcript)}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <Button disabled title="단원·형식 확정은 다음 국면">
-          단원·형식 확정(S3)
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button
+          disabled={verifyCount === 0 || onStartVerify === undefined}
+          onClick={() => onStartVerify?.()}
+          data-testid="start-verify"
+        >
+          검증 시작({verifyCount}건)
         </Button>
         <span className="text-xs text-stone-600">
-          단원·형식 확정은 다음 국면입니다. 「확인됨」은 선생님이 눌렀다는 뜻일 뿐,
-          문항이 검증되었다는 뜻이 아닙니다.
+          「확인됨」은 선생님이 눌렀다는 뜻일 뿐, 문항이 검증되었다는 뜻이 아닙니다.
         </span>
         {!ready && <span className="text-xs text-chart-actual">미확인 문항 {pending}개</span>}
+        {verifyCount === 0 && (
+          <span className="text-xs text-stone-500">
+            확인하고 단원까지 고른 문항이 있어야 검증을 시작할 수 있습니다.
+          </span>
+        )}
       </div>
     </Card>
   );

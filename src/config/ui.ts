@@ -75,6 +75,8 @@ export const chatDeferredNotice =
 /** 이번 국면에 켜져 있는 하부 타일 2종(대시보드 §3의 부분 구현) */
 export const tileCopy = {
   transcriptPending: (n: number) => `전사 확인 ${n}건 남음`,
+  awaitingVerify: (n: number) => `검증 대기 ${n}건`,
+  answerCheck: (n: number) => `정답표 확인 ${n}건`,
   ungraded: (title: string) => `${title} 채점 안 됨`,
   recent: '최근 작업',
 } as const;
