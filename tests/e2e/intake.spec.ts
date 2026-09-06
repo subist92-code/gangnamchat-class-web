@@ -61,18 +61,16 @@ test('코너 가 S0~S5 — 접수 · 전사 · 확인 · 단원확정 · 검증 
   const item = page.getByTestId('transcript-item-1');
   await expect(item).toBeVisible();
 
-  // 확인 전에는 S3 행이 열리지 않고, 검증도 시작할 수 없다.
-  await expect(page.getByTestId('s3-1')).toHaveCount(0);
-  await expect(page.getByTestId('start-verify')).toBeDisabled();
+  // 확인 전에는 단원 지정으로 넘어갈 수 없다.
+  await expect(page.getByTestId('go-assign')).toBeDisabled();
 
   await page.getByTestId('edit-1').fill('$x^2-3x+2=0$ 의 해를 구하시오. (고침)');
   await page.getByTestId('edit-1').blur();
   await item.getByRole('button', { name: '확인' }).click();
   await expect(item.getByText('확인됨', { exact: false })).toBeVisible();
 
-  // 확인하면 S3 행이 열린다. 단원을 고르기 전까지는 여전히 검증 대상이 아니다.
-  await expect(page.getByTestId('s3-1')).toBeVisible();
-  await expect(page.getByTestId('start-verify')).toBeDisabled();
+  // 확인하면 단원 지정 단계로 넘어갈 수 있다.
+  await expect(page.getByTestId('go-assign')).toBeEnabled();
 
   const saved = await page.evaluate(() => {
     const files = (window.__GC_CLASS_TEST__?.adapter as unknown as {
@@ -92,11 +90,20 @@ test('코너 가 S0~S5 — 접수 · 전사 · 확인 · 단원확정 · 검증 
   expect(doc.items[0]?.confirmed_at).not.toBeNull();
   expect(doc.items[0]?.diff_from_llm).toBeGreaterThan(0);
 
-  // ── S3 확정 → 검증(목) → 가-3 ────────────────────────────────────────────
-  await page.getByTestId('s3-mid-1').selectOption('M01');
-  await expect(page.getByTestId('start-verify')).toBeEnabled();
-  await expect(page.getByText('단원 블록 B20')).toBeVisible();
+  // ── 단원 · 형식 지정(A-7) → 검증(목) → 가-3 ──────────────────────────────
+  await page.getByTestId('go-assign').click();
+  await expect(page.getByRole('heading', { name: '단원 · 형식 지정' })).toBeVisible();
 
+  // 단원을 고르기 전에는 검증 대상이 아니다.
+  await expect(page.getByTestId('start-verify')).toBeDisabled();
+
+  // 일괄 적용이 기본 경로다 — 확인된 문항 전부에 같은 단원을 넣는다.
+  await page.getByTestId('bulk-mid').selectOption('M01');
+  await expect(page.getByText('단원 블록 B20')).toBeVisible();
+  await page.getByTestId('apply-bulk').click();
+  await expect(page.getByText('개 문항에 넣었습니다', { exact: false })).toBeVisible();
+
+  await expect(page.getByTestId('start-verify')).toBeEnabled();
   await page.getByTestId('start-verify').click();
   await expect(page.getByRole('heading', { name: '가-3 검증 결과' })).toBeVisible();
 
@@ -177,6 +184,9 @@ test('코너 가 S0~S5 — 접수 · 전사 · 확인 · 단원확정 · 검증 
   expect(verifyRows[0]?.lane).toBe('vault');
   expect(verifyRows[0]?.key_last4).toBe('ab12');
   expect(verifyRows[0]?.cache_read_tokens).toBe(0);
+  // C-074 — 캐시 생성 열이 있어야 한다. 목은 0 이지만 열 자체가 없으면 안 된다.
+  expect(verifyRows[0]).toHaveProperty('cache_creation_tokens');
+  expect(transcribeRows[0]).toHaveProperty('cache_creation_tokens');
   // 금액 열은 없다 — 단가는 변한다(R-3).
   expect(Object.keys(verifyRows[0] ?? {})).not.toContain('cost');
   expect(verifyRows[0]?.request_hash).toMatch(/^sha256:[0-9a-f]{64}$/);

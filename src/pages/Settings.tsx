@@ -22,6 +22,7 @@ import {
   rememberKey,
   unlockKey,
 } from '../auth/keyVault';
+import { passthroughBuild } from '../verify/client';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
 import type { ReceiptEntry } from '../folder/schemas/receipts';
@@ -44,6 +45,18 @@ export function SettingsPage() {
   const [rememberOn, setRememberOn] = useState(false);
   const [remembered, setRemembered] = useState(false);
   const [vaultPassword, setVaultPassword] = useState('');
+  const [build, setBuild] = useState<string | null>(null);
+
+  // 통로 배포 해시(자리 G) — 모델을 부르지 않는 OPTIONS 한 번이면 읽힌다.
+  useEffect(() => {
+    let alive = true;
+    void passthroughBuild().then((v) => {
+      if (alive) setBuild(v);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // 앱을 열 때 기억된 키가 있는지 본다 — 있으면 잠금 해제 자리가 열린다(§4).
   useEffect(() => {
@@ -372,6 +385,7 @@ export function SettingsPage() {
       <Card title="영수증">
         <p className="mb-2 text-stone-600">
           호출마다 1행. 키는 마지막 4자리만 적고 금액은 적지 않습니다(단가는 변합니다).
+          캐시 생성은 처음 한 번 크고, 그 뒤로는 적중이 커집니다.
         </p>
         <Button variant="ghost" onClick={showReceipts}>
           {ROOT.bankReceipts} 보기
@@ -385,6 +399,7 @@ export function SettingsPage() {
                 <th>용도</th>
                 <th>모델</th>
                 <th>in/out</th>
+                <th>캐시 생성/적중</th>
                 <th>키</th>
               </tr>
             </thead>
@@ -398,12 +413,15 @@ export function SettingsPage() {
                   <td>
                     {r.input_tokens}/{r.output_tokens}
                   </td>
+                  <td>
+                    {r.cache_creation_tokens}/{r.cache_read_tokens}
+                  </td>
                   <td>…{r.key_last4}</td>
                 </tr>
               ))}
               {receipts.length === 0 && (
                 <tr>
-                  <td className="py-2 text-stone-500" colSpan={6}>
+                  <td className="py-2 text-stone-500" colSpan={7}>
                     아직 없습니다.
                   </td>
                 </tr>
@@ -496,6 +514,9 @@ export function SettingsPage() {
             통로 함수는 로그인한 선생만 부를 수 있습니다(verify_jwt). 먼저 로그인하세요.
           </p>
         )}
+        <p className="mt-3 text-xs text-stone-500" data-testid="build-hash">
+          통로 배포 해시: {build === null ? '(확인할 수 없음)' : build}
+        </p>
         {canary !== null && (
           <p className="mt-2 text-xs text-stone-600">
             이번 카나리 문자열: <code>{canary}</code> — 함수 로그에서 이 문자열이 0건이어야 합니다.

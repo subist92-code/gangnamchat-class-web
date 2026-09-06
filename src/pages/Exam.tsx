@@ -6,21 +6,23 @@ import { useSession } from '../store/session';
 import { loadTranscript, verifiable } from '../intake/transcriptStore';
 import { ExamIntake } from './ExamIntake';
 import { TranscriptReview } from './TranscriptReview';
+import { UnitAssign } from './UnitAssign';
 import { VerdictReview } from './VerdictReview';
 import { Button, Card, Notice } from '../ui/parts';
 
 /**
- * 시험만들기 — 단계 스위처(접수 S0~S1 → 전사 확인 S2·S3 → 검증 결과 S4·S5).
+ * 시험만들기 — 단계 스위처(접수 S0~S1 → 전사 확인 S2 → 단원·형식 지정 S3 → 검증 결과 S4·S5).
  *
  * 단계를 주소에 둔다(`?step=verdict&batch=T-…`) — 홈 타일이 각 단계로 직행하기 위해서다.
  * S6 이후(미끼 · 카드 · 저장)는 지시서 03 이다.
  */
 
-type Step = 'intake' | 'review' | 'verdict';
+type Step = 'intake' | 'review' | 'assign' | 'verdict';
 
 const STEPS: ReadonlyArray<{ id: Step; label: string }> = [
   { id: 'intake', label: '접수' },
   { id: 'review', label: '전사 확인' },
+  { id: 'assign', label: '단원 · 형식 지정' },
   { id: 'verdict', label: '검증 결과' },
 ];
 
@@ -83,7 +85,7 @@ export function ExamPage() {
       </div>
 
       <Notice>
-        이 화면은 접수(S0) · 전사(S1) · 전사 확인(S2) · 단원·형식 확정(S3) · 검증(S4·S5)까지입니다.
+        이 화면은 접수(S0) · 전사(S1) · 전사 확인(S2) · 단원·형식 지정(S3) · 검증(S4·S5)까지입니다.
         미끼 입히기부터는 다음 국면입니다.
       </Notice>
 
@@ -115,6 +117,13 @@ export function ExamPage() {
                       </Button>
                       <Button
                         variant="ghost"
+                        disabled={t.items.every((i) => i.confirmed_at === null)}
+                        onClick={() => open(t, 'assign')}
+                      >
+                        단원 지정
+                      </Button>
+                      <Button
+                        variant="ghost"
                         disabled={toVerify === 0 && verified === 0}
                         onClick={() => open(t, 'verdict')}
                       >
@@ -137,7 +146,16 @@ export function ExamPage() {
           transcript={transcript}
           pages={pages}
           onChange={setTranscript}
+          onAssign={() => go('assign')}
+        />
+      )}
+
+      {step === 'assign' && transcript !== null && (
+        <UnitAssign
+          transcript={transcript}
+          onChange={setTranscript}
           onStartVerify={() => go('verdict')}
+          onBackToReview={() => go('review')}
         />
       )}
 

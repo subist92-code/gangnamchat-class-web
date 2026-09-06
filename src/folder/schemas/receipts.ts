@@ -22,6 +22,8 @@ export const receiptEntrySchema = z
     input_tokens: z.number().int().nonnegative(),
     output_tokens: z.number().int().nonnegative(),
     cache_read_tokens: z.number().int().nonnegative(),
+    /** 캐시를 **만드는** 토큰(C-074 · 2026-09-06). 옛 파일에는 없으므로 0 으로 읽는다. */
+    cache_creation_tokens: z.number().int().nonnegative().default(0),
     key_last4: z.string().length(4),
     request_hash: z.string().regex(/^sha256:[0-9a-f]{64}$/),
     problem_ids: z.array(z.string()),

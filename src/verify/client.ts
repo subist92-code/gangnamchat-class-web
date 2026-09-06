@@ -40,6 +40,7 @@ export interface VerifyReceipt {
   input_tokens: number;
   output_tokens: number;
   cache_read_tokens: number;
+  cache_creation_tokens?: number;
   key_last4: string;
   request_hash: string;
 }
@@ -126,6 +127,23 @@ export async function callVerify(params: {
   }
 
   return { verdict: parsed.data, receipt: payload.receipt as VerifyReceipt };
+}
+
+/**
+ * 통로 배포 해시(【자리 G】 · C-039 ②).
+ *
+ * 함수가 `x-passthrough-build` 헤더로 돌려준다. OPTIONS 는 게이트 앞에서 처리되므로
+ * 로그인 없이도 읽을 수 있고, 모델도 부르지 않는다.
+ * 시크릿이 설정돼 있지 않으면 헤더가 없다 — 그때는 null 이다.
+ */
+export async function passthroughBuild(): Promise<string | null> {
+  if (url === undefined) return null;
+  try {
+    const res = await fetch(`${url}/functions/v1/${functionName()}`, { method: 'OPTIONS' });
+    return res.headers.get('x-passthrough-build');
+  } catch {
+    return null;
+  }
 }
 
 /**

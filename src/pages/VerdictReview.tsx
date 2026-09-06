@@ -165,6 +165,7 @@ export function VerdictReview({
               input_tokens: result.receipt.input_tokens,
               output_tokens: result.receipt.output_tokens,
               cache_read_tokens: result.receipt.cache_read_tokens,
+              cache_creation_tokens: result.receipt.cache_creation_tokens ?? 0,
               key_last4: result.receipt.key_last4,
               request_hash: `sha256:${result.receipt.request_hash}`,
               problem_ids: [],

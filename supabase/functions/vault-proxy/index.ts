@@ -16,6 +16,8 @@ const CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-headers': 'authorization, content-type, x-byok-key',
   'access-control-allow-methods': 'POST, OPTIONS',
+  // 자리 G — 배포 해시를 브라우저가 읽으려면 노출 목록에 있어야 한다.
+  'access-control-expose-headers': 'x-passthrough-build',
 };
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
@@ -28,11 +30,13 @@ const ALLOWED_RECIPE = 'R-verify';
 const ALLOWED_UNITS = ['B10', 'B20', 'B30', 'B40', 'B-D'];
 const ALLOWED_COURSES = ['high', 'middle'];
 
-/**
- * B-D 분기 지시 1줄(규격 §2 · C-065).
- * ★ 문구는 금고 규격 원문 확인 후 확정한다 — 지금은 뜻만 옮긴 잠정문이다.
- */
-const BD_DIRECTIVE = '이 문항은 공통기초(D) 범위로 다룬다 — 단원 블록은 공통기초 기준을 따른다.';
+/** B-D 분기 지시 1줄(규격 §2 · C-065 · 문구 확정 2026-09-06). */
+function bdDirective(course: string): string {
+  return (
+    `이 문항의 과정(course)은 ${course}이다. ` +
+    '공통기초 블록의 과정 분기표(B-D-2)에서 그 열의 조문만 적용한다.'
+  );
+}
 
 function json(body: unknown, status = 200, extra: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -265,7 +269,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     (b) => ({ type: 'text', text: b.text }) as Record<string, unknown>,
   );
   if (body.course === 'middle' || body.unit === 'B-D') {
-    system.push({ type: 'text', text: BD_DIRECTIVE });
+    system.push({ type: 'text', text: bdDirective(body.course) });
   }
   const last = system[system.length - 1];
   if (last !== undefined) last['cache_control'] = { type: 'ephemeral' };
@@ -354,6 +358,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
           input_tokens: payload.usage.input_tokens,
           output_tokens: payload.usage.output_tokens,
           cache_read_tokens: payload.usage.cache_read_input_tokens ?? 0,
+          cache_creation_tokens: payload.usage.cache_creation_input_tokens ?? 0,
           key_last4: apiKey.slice(-4),
           request_hash: requestHash,
         },

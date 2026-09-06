@@ -73,6 +73,7 @@ async function runPage(
       model: result.model,
       input_tokens: result.usage.input_tokens,
       output_tokens: result.usage.output_tokens,
+      cache_creation_tokens: 0,
       cache_read_tokens: result.usage.cache_read_tokens,
       key_last4: keyLast4(apiKey),
       request_hash: await requestHash(
