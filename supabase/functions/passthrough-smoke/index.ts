@@ -44,9 +44,41 @@ interface ModelResponse {
   usage: { input_tokens: number; output_tokens: number };
 }
 
+/**
+ * 「로그인한 선생만」 게이트(2026-09-06 수리).
+ *
+ * `verify_jwt = true` 만으로는 부족하다 — 실측 결과 publishable 키(브라우저 번들에
+ * 실려 나가는 공개 키)만으로도 플랫폼 게이트를 통과했다. 서명은 플랫폼이 이미 본다
+ * (위조 JWT 는 apikey 를 함께 보내도 401). 그래서 여기서는 role · sub 만 확인한다.
+ */
+function signedInTeacher(req: Request): string | null {
+  const auth = req.headers.get('authorization');
+  if (auth === null) return null;
+
+  const token = auth.replace(/^Bearers+/i, '').trim();
+  const parts = token.split('.');
+  if (parts.length !== 3) return null; // opaque 키는 JWT 가 아니다
+
+  try {
+    const raw = parts[1] as string;
+    const padded = raw.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(padded)) as { role?: unknown; sub?: unknown };
+    if (payload.role !== 'authenticated') return null;
+    if (typeof payload.sub !== 'string' || payload.sub.length === 0) return null;
+    return payload.sub;
+  } catch {
+    return null;
+  }
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
+
+  // 로그인 확인이 먼저다 — 로그인하지 않은 호출은 입력 검증에 닿기 전에 끊는다.
+  if (signedInTeacher(req) === null) {
+    return json({ error: 'login_required' }, 401);
+  }
 
   const apiKey = req.headers.get('x-byok-key');
   if (apiKey === null || apiKey.length === 0) {

@@ -8,19 +8,22 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
  */
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
 let cached: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  return typeof url === 'string' && url.length > 0 && typeof anonKey === 'string' && anonKey.length > 0;
+  return (
+    typeof url === 'string' && url.length > 0 &&
+    typeof publishableKey === 'string' && publishableKey.length > 0
+  );
 }
 
 export function supabase(): SupabaseClient {
   if (!isSupabaseConfigured()) {
-    throw new Error('Supabase 설정이 없습니다(.env.local 의 VITE_SUPABASE_URL · VITE_SUPABASE_ANON_KEY).');
+    throw new Error('Supabase 설정이 없습니다(.env.local 의 VITE_SUPABASE_URL · VITE_SUPABASE_PUBLISHABLE_KEY).');
   }
-  cached ??= createClient(url as string, anonKey as string);
+  cached ??= createClient(url as string, publishableKey as string);
   return cached;
 }
 
