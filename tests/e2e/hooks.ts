@@ -94,8 +94,59 @@ export function installTestHooks(seed: Record<string, string>): void {
     },
   });
 
+  /**
+   * 검증 목 — e2e 에는 로그인 세션도 금고도 없다.
+   *
+   * 제안 두 개를 일부러 다르게 만든다:
+   *   ① 숫자를 그대로 둔 제안 → 「적용」이 통과해야 한다
+   *   ② 숫자를 바꾼 제안     → 「적용」이 막혀야 한다
+   * `cas_script` 는 빈 문자열이라 CAS 는 na 로 끝난다(Pyodide 를 띄우지 않는다).
+   */
+  const verify = async () => ({
+    verdict: {
+      status: 'pass',
+      issues: [
+        {
+          kind: 'ambiguous_wording',
+          where: '해를',
+          detail: '「해」가 실근인지 복소근인지 분명하지 않습니다.',
+          fix_suggestion: '$x^2-3x+2=0$ 의 모든 실근을 구하시오. (고침)',
+        },
+        {
+          kind: 'missing_condition',
+          where: '계수',
+          detail: '숫자를 바꾸는 제안입니다 — 적용이 막혀야 합니다.',
+          fix_suggestion: '$x^2-5x+6=0$ 의 해를 구하시오. (고침)',
+        },
+        {
+          kind: 'answer_mismatch',
+          where: '정답',
+          detail: '선생 정답과 본문 조건의 해가 다릅니다.',
+          fix_suggestion: null,
+        },
+      ],
+      track: 1,
+      nodes_suggested: { mid: 'M01', sub: [] },
+      difficulty_suggested: 3,
+      cas_script: '',
+    },
+    receipt: {
+      lane: 'vault',
+      purpose: 'verify',
+      recipe: 'R-verify',
+      blocks: { B00: 'v1', 'T-verify': 'v1' },
+      model: 'fixture-model',
+      input_tokens: 1000,
+      output_tokens: 120,
+      cache_read_tokens: 0,
+      key_last4: 'ab12',
+      request_hash: '0'.repeat(64),
+    },
+  });
+
   (window as unknown as { __GC_CLASS_TEST__: unknown }).__GC_CLASS_TEST__ = {
     adapter,
     transcribe,
+    verify,
   };
 }

@@ -29,6 +29,8 @@ export function Button({
   variant = 'primary',
   type = 'button',
   title,
+  // TS 는 하이픈이 든 JSX 속성을 검사하지 않는다 — 받아서 넘기지 않으면 조용히 사라진다.
+  'data-testid': testId,
 }: {
   children: ReactNode;
   onClick?: () => void;
@@ -36,6 +38,7 @@ export function Button({
   variant?: 'primary' | 'ghost';
   type?: 'button' | 'submit';
   title?: string;
+  'data-testid'?: string;
 }) {
   const base = 'rounded px-3 py-2 text-sm transition disabled:cursor-not-allowed disabled:opacity-40';
   const skin =
@@ -43,7 +46,14 @@ export function Button({
       ? 'bg-primary text-white hover:bg-primary-hover'
       : 'border border-stone-300 bg-white text-stone-700 hover:bg-primary-tint';
   return (
-    <button type={type} className={`${base} ${skin}`} onClick={onClick} disabled={disabled} title={title}>
+    <button
+      type={type}
+      className={`${base} ${skin}`}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      data-testid={testId}
+    >
       {children}
     </button>
   );

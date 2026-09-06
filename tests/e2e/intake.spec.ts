@@ -2,9 +2,10 @@ import { expect, test } from '@playwright/test';
 import { installTestHooks } from './hooks';
 
 /**
- * e2e 1건(§2-9 · §6): 폴더 열기 → 이미지 1장 → (직결은 목 응답) → 가-2 편집 → 확인 →
- * `_임시/전사/T-….json` 존재 · 미확인 상태로 S3 버튼 비활성.
- * showDirectoryPicker 와 모델 호출은 window 훅으로 대신한다.
+ * e2e 1건(§2-9 · 지시서 02 §6): 폴더 열기 → 이미지 1장 → (직결은 목 응답) → 가-2 편집 →
+ * 확인 → S3 단원 확정 → 검증(통로는 목 verdict) → 가-3 칩 · issues · 「적용」 수치 보존 ·
+ * 「미끼 입히기」 비활성 → 저장본과 영수증 확인.
+ * showDirectoryPicker · 모델 호출 · 통로 호출은 window 훅으로 대신한다.
  */
 const CLASS_JSON = JSON.stringify({
   spec: 'gc-class/0.1',
@@ -32,7 +33,7 @@ const PNG = Buffer.from(
   'base64',
 );
 
-test('코너 가 S0~S2 — 접수 · 전사 · 확인', async ({ page }) => {
+test('코너 가 S0~S5 — 접수 · 전사 · 확인 · 단원확정 · 검증 · 판정', async ({ page }) => {
   await page.addInitScript(installTestHooks, {
     'class.json': CLASS_JSON,
     '명부/students.csv': STUDENTS_CSV,
@@ -60,15 +61,18 @@ test('코너 가 S0~S2 — 접수 · 전사 · 확인', async ({ page }) => {
   const item = page.getByTestId('transcript-item-1');
   await expect(item).toBeVisible();
 
-  // S3 는 미확인 상태에서도, 확인 뒤에도 이번 국면에서는 열리지 않는다.
-  const s3 = page.getByRole('button', { name: '단원·형식 확정(S3)' });
-  await expect(s3).toBeDisabled();
+  // 확인 전에는 S3 행이 열리지 않고, 검증도 시작할 수 없다.
+  await expect(page.getByTestId('s3-1')).toHaveCount(0);
+  await expect(page.getByTestId('start-verify')).toBeDisabled();
 
   await page.getByTestId('edit-1').fill('$x^2-3x+2=0$ 의 해를 구하시오. (고침)');
   await page.getByTestId('edit-1').blur();
   await item.getByRole('button', { name: '확인' }).click();
   await expect(item.getByText('확인됨', { exact: false })).toBeVisible();
-  await expect(s3).toBeDisabled();
+
+  // 확인하면 S3 행이 열린다. 단원을 고르기 전까지는 여전히 검증 대상이 아니다.
+  await expect(page.getByTestId('s3-1')).toBeVisible();
+  await expect(page.getByTestId('start-verify')).toBeDisabled();
 
   const saved = await page.evaluate(() => {
     const files = (window.__GC_CLASS_TEST__?.adapter as unknown as {
@@ -87,4 +91,93 @@ test('코너 가 S0~S2 — 접수 · 전사 · 확인', async ({ page }) => {
   expect(doc.spec).toBe('gc-class-transcript-tmp/0.1');
   expect(doc.items[0]?.confirmed_at).not.toBeNull();
   expect(doc.items[0]?.diff_from_llm).toBeGreaterThan(0);
+
+  // ── S3 확정 → 검증(목) → 가-3 ────────────────────────────────────────────
+  await page.getByTestId('s3-mid-1').selectOption('M01');
+  await expect(page.getByTestId('start-verify')).toBeEnabled();
+  await expect(page.getByText('단원 블록 B20')).toBeVisible();
+
+  await page.getByTestId('start-verify').click();
+  await expect(page.getByRole('heading', { name: '가-3 검증 결과' })).toBeVisible();
+
+  await page.getByRole('button', { name: /^검증 시작\(/ }).click();
+
+  const verdict = page.getByTestId('verdict-1');
+  await expect(verdict).toBeVisible();
+
+  // 칩 — pass 와 「정답표 확인」이 함께 보인다(결함이 아니라 판정 대기다).
+  await expect(verdict.getByText('pass', { exact: true })).toBeVisible();
+  await expect(verdict.getByText('정답표 확인').first()).toBeVisible();
+
+  // issues 가 화면에 나온다.
+  await expect(verdict.getByText('「해」가 실근인지', { exact: false })).toBeVisible();
+
+  // 「미끼 입히기」는 보이되 비활성 — 지시서 03 이다.
+  await expect(verdict.getByRole('button', { name: '미끼 입히기' })).toBeDisabled();
+
+  // 숫자를 바꾸는 제안은 적용이 막힌다.
+  await verdict
+    .getByText('$x^2-5x+6=0$ 의 해를 구하시오. (고침)', { exact: false })
+    .locator('xpath=following-sibling::button[1]')
+    .click();
+  await expect(page.getByText('수치가 바뀌는 제안', { exact: false })).toBeVisible();
+
+  // 숫자를 보존한 제안은 적용된다.
+  await verdict
+    .getByText('$x^2-3x+2=0$ 의 모든 실근을 구하시오. (고침)', { exact: false })
+    .locator('xpath=following-sibling::button[1]')
+    .click();
+  await expect(page.getByText('문장을 바꿨습니다', { exact: false })).toBeVisible();
+
+  // 저장본에도 판정과 바뀐 문장이 남는다.
+  const after = await page.evaluate(() => {
+    const files = (window.__GC_CLASS_TEST__?.adapter as unknown as {
+      __files: Map<string, string>;
+    }).__files;
+    const key = [...files.keys()].find((k) => k.startsWith('_임시/전사/T-'));
+    return key === undefined ? null : (files.get(key) as string);
+  });
+  const doc2 = JSON.parse(after ?? '{}') as {
+    items: {
+      s3: { mid: string; unit: string } | null;
+      verdict: { status: string } | null;
+      state: string;
+      edited: { problem_text: string };
+    }[];
+  };
+  expect(doc2.items[0]?.s3?.mid).toBe('M01');
+  expect(doc2.items[0]?.s3?.unit).toBe('B20');
+  expect(doc2.items[0]?.verdict?.status).toBe('pass');
+  expect(doc2.items[0]?.state).toBe('verified:pass');
+  expect(doc2.items[0]?.edited.problem_text).toContain('모든 실근');
+
+  // 영수증 1행 — 금액은 없고 키는 끝 4자리만.
+  const receipts = await page.evaluate(() => {
+    const files = (window.__GC_CLASS_TEST__?.adapter as unknown as {
+      __files: Map<string, string>;
+    }).__files;
+    return files.get('문제함/receipts.json') ?? null;
+  });
+  const rec = JSON.parse(receipts ?? '{"entries":[]}') as {
+    entries: {
+      lane: string;
+      purpose: string;
+      key_last4: string;
+      cache_read_tokens: number;
+      request_hash: string;
+    }[];
+  };
+
+  // 전사(direct)도 1행을 남긴다 — 검증(vault) 행만 골라 본다.
+  const transcribeRows = rec.entries.filter((e) => e.purpose === 'transcribe');
+  const verifyRows = rec.entries.filter((e) => e.purpose === 'verify');
+  expect(transcribeRows).toHaveLength(1);
+  expect(verifyRows).toHaveLength(1);
+
+  expect(verifyRows[0]?.lane).toBe('vault');
+  expect(verifyRows[0]?.key_last4).toBe('ab12');
+  expect(verifyRows[0]?.cache_read_tokens).toBe(0);
+  // 금액 열은 없다 — 단가는 변한다(R-3).
+  expect(Object.keys(verifyRows[0] ?? {})).not.toContain('cost');
+  expect(verifyRows[0]?.request_hash).toMatch(/^sha256:[0-9a-f]{64}$/);
 });

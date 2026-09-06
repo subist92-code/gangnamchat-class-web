@@ -1,0 +1,19 @@
+{
+  "units": {
+    "B10": "B10_precalc.md",
+    "B20": "B20_algebra.md",
+    "B30": "B30_calculus1.md",
+    "B40": "B40_stat.md",
+    "B-D": "B-D_basic.md"
+  },
+  "recipes": {
+    "R-verify": [
+      "B00_core.md",
+      "B03_difficulty.md",
+      "B04_cas.md",
+      "B05_output.md",
+      "B20_algebra.md",
+      "T-verify.md"
+    ]
+  }
+}

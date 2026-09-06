@@ -1,4 +1,5 @@
 import { currentAccessToken } from '../auth/supabase';
+import { testHooks } from '../testHooks';
 import { verdictSchema, type Verdict } from './verdict';
 import type { UnitSlot } from '../folder/schemas/transcript';
 import type { Course } from '../folder/schemas/common';
@@ -85,6 +86,10 @@ export async function callVerify(params: {
   course: Course;
   input: VerifyInput;
 }): Promise<VerifyResult> {
+  // e2e 는 로그인 세션도 금고도 없다 — 심어 둔 목이 있으면 그것을 쓴다(§2-9).
+  const mock = testHooks()?.verify;
+  if (mock !== undefined) return await mock(params);
+
   const token = await currentAccessToken();
   if (token === null) throw new VerifyError('login_required', '검증은 로그인이 필요합니다.');
   if (url === undefined) throw new VerifyError('bad_request', 'Supabase 설정이 없습니다.');
