@@ -5,6 +5,7 @@ import { prepareIntake, type PreparedIntake } from '../intake/files';
 import { makeBatchId, type IntakePage } from '../intake/types';
 import { transcribeBatch, type TranscribeProgress } from '../intake/transcribe';
 import { newTranscript, saveTranscript } from '../intake/transcriptStore';
+import { registerClass } from '../folder/classes';
 import type { TranscriptTmp } from '../folder/schemas/transcript';
 import { useSession } from '../store/session';
 import { Button, Card, Notice } from '../ui/parts';
@@ -18,7 +19,7 @@ export function ExamIntake({
 }: {
   onTranscribed: (t: TranscriptTmp, pages: IntakePage[]) => void;
 }) {
-  const { adapter, classJson, apiKey, refreshTranscripts } = useSession();
+  const { adapter, classJson, apiKey, refreshTranscripts, setClassJson } = useSession();
   const [prepared, setPrepared] = useState<PreparedIntake | null>(null);
   const [classRef, setClassRef] = useState('');
   const [midDefault, setMidDefault] = useState('');
@@ -64,6 +65,15 @@ export function ExamIntake({
     setBusy(true);
     setProgress({ done: 0, total: prepared.pages.length, failed: 0 });
     try {
+      // 직접 입력한 반은 여기서 등록된다 — 접수는 됐는데 반이 없는 상태를 남기지 않는다.
+      if (classJson !== null) {
+        const registered = await registerClass(adapter, classJson, {
+          name: classRef.trim(),
+          course,
+        });
+        if (registered.created) setClassJson(registered.classJson);
+      }
+
       const outcome = await transcribeBatch(
         prepared.pages,
         apiKey,
@@ -146,7 +156,17 @@ export function ExamIntake({
               <option key={c} value={c} />
             ))}
           </datalist>
-          <span className="mt-1 text-stone-500">과정: {course === 'high' ? '고등' : '중등'}</span>
+          <span className="mt-1 text-stone-500">
+            과정: {course === 'high' ? '고등' : '중등'}
+            {classJson !== null && classJson.classes[classRef.trim()] === undefined &&
+              classRef.trim().length > 0 &&
+              ' · 새 반입니다 — 전사를 시작하면 등록됩니다'}
+          </span>
+          {course === 'middle' && (
+            <span className="mt-1 text-stone-600">
+              중등 단원 블록 = 공통기초 D {loadBundle('middle').common_basic?.length ?? 0}노드
+            </span>
+          )}
         </label>
 
         <label className="flex flex-col text-xs text-stone-600">
