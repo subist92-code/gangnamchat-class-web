@@ -1,53 +1,16 @@
 {
   "name": "gangnamchat-class-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "강남챗 클래스 — 랜딩 1장 정적 사이트 + 이메일 전송 함수 1개 (2기)",
   "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc -b --force",
-    "lint": "eslint .",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "config-layer": "node scripts/check-config-layer.mjs",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run config-layer && npm run no-vault",
-    "no-vault": "node scripts/check-no-vault.mjs"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.72.0",
-    "@supabase/supabase-js": "^2.58.0",
-    "katex": "^0.16.11",
-    "pdfjs-dist": "^4.10.38",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.1.1",
-    "zod": "^3.24.1",
-    "zustand": "^5.0.2"
+    "build": "node src/build.mjs",
+    "fonts": "node scripts/fetch_fonts.mjs",
+    "zip": "python scripts/build_zip.py ../gangnamchat-class/docs/패키지",
+    "check": "python scripts/check_forbidden.py public/index.html public/dl/gangnamchat-class-v1_0.zip"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
-    "@playwright/test": "^1.49.1",
-    "@types/katex": "^0.16.7",
-    "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^9.17.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "globals": "^15.14.0",
-    "jsdom": "^25.0.1",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1",
-    "vite": "^6.0.5",
-    "vitest": "^3.2.7"
+    "katex": "0.16.11"
   }
 }

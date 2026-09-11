@@ -5,25 +5,22 @@
 *.key
 *.pem
 
-# 의존성 · 빌드
+# 의존성
 node_modules/
-dist/
-dist-ssr/
-*.local
 
-# Supabase 로컬
-.supabase/
+# Cloudflare
+.wrangler/
+
+# 로그
+*.log
+
+# Supabase 로컬 캐시
 supabase/.temp/
-
-# 테스트 산출물
-playwright-report/
-test-results/
-blob-report/
-coverage/
 
 # 에디터 · OS
 .vscode/*
-!.vscode/extensions.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# public/dl/*.zip 은 커밋한다 — 정적 산출물(【결재 R-1】 2026-09-11 · 발주자 「커밋」)
