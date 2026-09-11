@@ -1,87 +1,63 @@
-# 강남챗 클래스 — 웹(코드 리포)
+# gangnamchat-class-web — 랜딩 1장 정적 사이트 (2기)
 
-학원·학교 선생이 자기 문제로 시험을 만들고, 오답이 학생의 오개념을 말하게 하고,
-그 진단으로 학생을 성장시키는 무료 웹 서비스의 코드다.
+class.gangnamchat.com. 한 장 · 회원가입 없음 · 이메일 입력 → 패키지 zip 링크를 메일로.
 
-- **문서 리포(정본)**: `gangnamchat-class` — 확정사항 대장 · 기획서 · 규격 · 지시서.
-  이 리포에는 문서를 두지 않는다.
-- **금고 리포**: `gangnamchat-class-vault` (private). 이 리포와 절대 섞지 않는다.
+- 정본은 이 리포에 없다. 문안·규칙의 정본은 **클래스 docs 리포**(`gangnamchat-class/docs/`)다.
+  대장 v1.0 → 선언문 v1.1 → 랜딩 1장 구조 v1.0 → 구현 지시서 01(2기) 순서로 읽는다.
+- 여기는 그 정본을 **소비**만 한다. 문안을 고칠 일이 생기면 docs 를 먼저 고치고 여기를 맞춘다.
+- 1기(Vite SPA · Pyodide · vault-proxy) 코드는 `archive/2026-09-06_class1` 브랜치에 그대로 있다.
 
-Claude API 기반으로 운용한다. 모델 호출은 선생님이 발급한 API 키로 이루어진다.
+## 구조
 
-## 세 가지 원칙(코드가 지켜야 하는 것)
-
-1. **선생의 문제·답안·학생 데이터는 서버에 저장하지 않는다.** 파일의 집은 선생 로컬 폴더다
-   (File System Access API). 업로드가 아니라 그 자리에서 읽고 그 자리에 쓴다.
-2. **API 키는 저장하지 않는다.** 선생이 자기 키를 넣고, 그 키는 브라우저 메모리에만 있다가
-   새로고침과 함께 사라진다. 폴더에도 우리 서버에도 남지 않는다.
-3. **프롬프트 설계와 오개념 카탈로그 본문은 서버 금고에만 있다.** 브라우저로 내려보내지 않는다.
-   화면에 나오는 것은 노드 이름·트리와 오개념 대분류 라벨까지다.
-
-## 지원 브라우저
-
-크롬 · 엣지 · 웨일. 사파리·파이어폭스는 폴더 저장을 지원하지 않아 안내 화면을 띄운다.
-
-## 개발
-
-```bash
-npm install
-cp .env.example .env.local   # 값은 각자 채운다. .env* 는 커밋하지 않는다.
-npm run dev
+```
+public/
+  index.html      ← 빌드 산출물(손으로 고치지 않는다). 원본은 src/index.template.html
+  styles.css      ← 디자인 토큰 · 반응형 · 인쇄 CSS
+  fonts.css · fonts/   ← Gowun Batang · Noto Sans KR self-host (OFL)
+  katex/          ← KaTeX CSS·woff2 self-host (빌드가 복사)
+  dl/             ← 배포본 zip + md5
+  _headers        ← CSP 등 (빌드가 생성 · 인라인 스크립트 sha256 포함)
+functions/api/subscribe.ts   ← Pages Function 1개. 저장 1행 + 전송 1통
+src/index.template.html      ← 문안 원본
+src/build.mjs                ← 템플릿 + KaTeX 정적 렌더 → public/index.html
+scripts/build_zip.py         ← 패키지 1~4 → 배포본 zip(내부 절 제거 · md5)
+scripts/check_forbidden.py   ← 금지어·어휘·식별자·【 검사(양성 대조 포함)
+scripts/fetch_fonts.mjs      ← 폰트 내려받기(한 번 돌리고 산출물을 커밋)
+supabase/migrations/         ← package_requests 테이블 1개
 ```
 
-### 검사
+## 명령
 
 ```bash
-npm run check      # tsc + eslint + vitest + 설정 계층 검사
-npm run test:e2e   # Playwright 1건 (npx playwright install 이 먼저 필요하다)
+npm install                                   # katex 하나뿐
+npm run build                                 # → public/index.html · public/_headers
+npm run zip                                   # → public/dl/gangnamchat-class-v1_0.zip (+ .md5)
+npm run check                                 # 금지어 검사 — 【 가 남아 있으면 실패한다(의도된 게이트)
+npm run fonts                                 # 폰트 재취득(평소엔 돌릴 일 없음)
 ```
 
-`npm run check` 안의 `config-layer` 는 두 가지를 본다.
+`npm run zip` 은 클래스 docs 리포를 **읽기만** 한다(`../gangnamchat-class/docs/패키지`).
+원문을 이 리포 안에 복사하지 않는다.
 
-- 모델 ID 문자열이 `src/config/models.ts` 밖에 있으면 실패한다(C-051 · 리터럴 금지).
-- 금고 어휘가 브라우저 코드에 있으면 실패한다(H-3).
+## 검사가 통과하지 않는 것이 정상인 시점
 
-두 검사 모두 **양성 대조**로 살아 있음을 증명해야 한다 — 임시로 한 줄 심어 잡히는지 보고 지운다.
-`tests/fixtures/class-folder-poisoned/` 는 lint L-11 의 양성 대조 픽스처다. 이 픽스처가 사라지면
-「키 패턴 0건」 보고는 무효다.
+`npm run check` 는 산출물에 `【` 가 하나라도 있으면 실패한다. 이것은 버그가 아니라 게이트다(C2-066).
+아래 세 개가 확정되기 전에는 배포하지 않는다.
 
-## 이 국면의 범위
-
-구현 지시서 01 — 리포 골격 · 스모크 4건 · 코너 가 S0~S2 · 리포트 R0~R1.
-
-| 화면 | 상태 |
-|---|---|
-| 홈 | 채팅 우선 껍데기(탭 5 · 타일 2종). 대화층은 다음 국면 — 모델 호출 0 |
-| 시험만들기 | 접수(S0) · 전사(S1) · 전사 확인(S2). S3 이후는 다음 국면 |
-| 시험채점 | 응답 정규화(R0) · 판정(R1). 리포트(R2 이후)는 다음 국면 |
-| 학생 | 명부 읽기 표시만 |
-| 설정 | 폴더 · 키 · 영수증 · CAS 자가진단 · 통로 함수 |
-| 동형만들기 · 문제공방 · 리포트 · 문제함 | 준비 중(빈 화면 — 준비된 척하지 않는다) |
-
-## 복사해 온 자산(편집 금지)
-
-정본은 강남챗 2.0에 있다. 이 리포는 읽기 전용 소비자이며, 노드 이름은 정본과 완전히 일치해야 한다.
-
-| 파일 | 출처 | 원본 md5 |
+| 【자리】 | 누가 | 어디 |
 |---|---|---|
-| `src/nodemap/nodemap.bundle.high.json` | 문서 리포 `docs/정본스냅샷/` | `b621643bd9b982c1987681476ca084f4` |
-| `src/nodemap/nodemap.bundle.middle.json` | 문서 리포 `docs/정본스냅샷/` | `f792ce5a4a11c8fa85463efefa7f1cba` |
-| `src/llm/blocks/P82_transcribe.ts` | 문서 리포 `docs/공개블록/P82_transcribe.md` | `a3d690bbe5074654cbfc3020107e752d` |
+| Google Play 링크 | 발주자 | `src/index.template.html` 구획 4 |
+| 연락처 메일 주소 | 발주자 | 푸터 `mailto:` · 개인정보 고지 문의처 |
+| 개인정보 고지 문안 확정 | 발주자 | 푸터 `#privacy` · 초안은 지시서 01 §4-4 |
 
-세 파일은 복사본이다. 고칠 일이 생기면 문서 리포에서 고치고 다시 복사한다.
-P82 사본이 원본과 같은지는 `tests/unit/p82.test.ts` 가 md5 로 지킨다.
+## 환경변수
 
-중등 번들에는 중위 단원이 없다(공통기초 D만). 중등으로 선언한 반은 「준비 중」으로 열린다.
+이름은 `.env.example` 에만 있다. 값은 **Cloudflare Pages 프로젝트 설정**에 넣는다.
+키를 파일·커밋·로그·채팅에 싣지 않는다(H-6). 레이트 리밋 N·M 도 설정값이며 코드에 숫자를 적지 않는다.
 
-## 폴더 구조가 곧 DB 스키마다
+## 서버가 보유하는 것
 
-선생이 고른 폴더 하나가 루트다. 도구가 만드는 예약어는 `명부/` · `문제함/` · `시험/` · `숙제/` ·
-`_임시/` 이며, 그 밖의 폴더는 선생 자유다. 자세한 규격은 문서 리포의 선생 폴더 규격 v0.3에 있다.
+`email` · `consented_at` · `sent_at` · `ip_hash`(해시만) · `cta` — 그 외 0.
+IP 원문과 이메일 전문은 로그에도 남기지 않는다. 응답은 전부 `Cache-Control: no-store`.
 
-첫 화면 안내 한 줄: **이 폴더가 전부입니다. 클라우드 동기 폴더를 루트로 고르면 백업이 됩니다.**
-
-## Edge Function
-
-`supabase/functions/passthrough-smoke/` — 무저장 통로 함수. 배포와 카나리(무저장) 검사 절차는
-그 폴더의 README에 있다. 모델 ID는 코드에 없고 `MODEL_SMOKE` 시크릿에서만 온다.
+with gangnamchat

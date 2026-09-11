@@ -1,0 +1,16 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'sha256-aoDkdwvv+LwTvtGwg3/0i+V/LtNyp2+1EnmHhlSc3nQ='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'; object-src 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+
+/dl/*
+  Cache-Control: public, max-age=3600
+  Content-Disposition: attachment
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/katex/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

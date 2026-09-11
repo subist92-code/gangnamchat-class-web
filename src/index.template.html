@@ -1,0 +1,187 @@
+<!doctype html>
+<!--
+  강남챗 클래스 — 랜딩 1장 (class.gangnamchat.com)
+  이 파일은 문안 원본이다. 빌드(node src/build.mjs)가 $…$ 수식을 KaTeX로 구워 public/index.html 을 만든다.
+  문안 출처: 선언문 v1.1 §2·§3 · 랜딩 1장 구조 v1.0 §1 · 패키지 1~4 v1.0 · 구현 지시서 01(2기) §4.
+  고칠 때는 정본(클래스 리포 docs/)을 먼저 고치고 그 다음 여기를 맞춘다 — 반대 방향은 없다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오답은 말을 합니다 — 강남챗 클래스</title>
+<meta name="description" content="문제에 진단값을 심으면, 시험이 점수표가 아니라 진단서가 됩니다. 수학 선생님을 위한 무료 프롬프트.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="오답은 말을 합니다 — 강남챗 클래스">
+<meta property="og:description" content="문제에 진단값을 심으면, 시험이 점수표가 아니라 진단서가 됩니다. 수학 선생님을 위한 무료 프롬프트.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://class.gangnamchat.com/">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="katex/katex.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ══ 0. 히어로 ══════════════════════════════════════════════════════════ -->
+<section id="hero" class="band band--tint">
+  <div class="wrap">
+    <h1>오답은 말을 합니다.</h1>
+    <p class="lede">문제에 진단값을 심으면, 시험이 점수표가 아니라 진단서가 됩니다. 수학 선생님을 위한 무료 프롬프트.</p>
+    <!--FORM:A-->
+  </div>
+</section>
+
+<!-- ══ 1. 문제 ════════════════════════════════════════════════════════════ -->
+<section id="problem" class="band">
+  <div class="wrap">
+    <p class="bignum"><strong>84</strong><span>점. 이 숫자는 학생이 무엇을 모르는지 말해주지 않습니다.</span></p>
+    <p>학생이 시험지 앞에서 보내는 100분은, 그 학생이 한 해 중 가장 집중해서 수학을 생각하는 시간이다. 그 시간의 결과를 우리는 숫자 하나로 접는다. 84점. 3등급. 그리고 다음 시험을 준비한다.</p>
+    <p>그 숫자는 학생이 <strong>무엇을 모르는지</strong> 말해주지 않는다. 16점을 잃은 이유가 계산 실수인지, 조건을 빠뜨린 것인지, 개념 자체를 거꾸로 알고 있는 것인지 — 시험지는 이미 알고 있다. 다만 아무도 그것을 읽지 않는다.</p>
+  </div>
+</section>
+
+<!-- ══ 2. 방법 ════════════════════════════════════════════════════════════ -->
+<section id="method" class="band band--tint">
+  <div class="wrap">
+    <h2>방법</h2>
+    <p class="claim">학생이 「부호를 놓쳤을 때」 도달하는 답을 선지에 미리 심습니다. 고른 오답이 가능한 원인을 가리키고, 반복과 확인이 그것을 뒷받침합니다.</p>
+
+    <!-- 예시 카드 = 패키지 4 v1.0 예시 1(등비중항 · 난이도 1) 그대로 — C2-061 -->
+    <article class="card card--example">
+      <p class="card__kicker">예시 — 난이도 1 · 수열(등비수열)</p>
+      <p class="q"><strong>문항.</strong> 세 수 $2$, $x$, $18$이 이 순서로 등비수열을 이룰 때, 양수 $x$의 값은?</p>
+      <p class="choices">① $6$ &nbsp; ② $9$ &nbsp; ③ $10$ &nbsp; ④ $20$ &nbsp; ⑤ $36$</p>
+      <p class="answer"><strong>정답 ① $6$.</strong> 등비중항이므로 $x^{2}=2\times18=36$, $x&gt;0$이니 $x=6$.</p>
+
+      <div class="tablewrap">
+      <table class="seats">
+        <caption>선지별 좌석표</caption>
+        <thead><tr><th scope="col">선지</th><th scope="col">좌석</th><th scope="col">사유</th></tr></thead>
+        <tbody>
+          <tr><td>① $6$</td><td>정답</td><td></td></tr>
+          <tr><td>② $9$</td><td>오개념</td><td>가운데 항을 뒤 항의 절반으로 보아 $\dfrac{18}{2}$를 계산함 → 학생이 「등비중항 공식」을 변형된 꼴로 기억하고 있다 <span class="tag">(개념을 혼동했다 · 다항식·항등식)</span></td></tr>
+          <tr class="seat--primary"><td>③ $10$</td><td><strong>오개념 ★ 주 진단값</strong></td><td>등차중항 공식을 적용해 $\dfrac{2+18}{2}$를 계산함 → 「가운데 항은 언제나 양옆의 평균」이라고 믿고 있다 — 등차·등비를 나누지 않고 공식 하나를 이식 <span class="tag">(개념을 혼동했다 · 조건·경우 누락)</span></td></tr>
+          <tr><td>④ $20$</td><td>오개념</td><td>두 수의 합 $2+18$을 답으로 씀 → 곱을 물었는데 합으로 바꿔 답함 <span class="tag">(조건 오독 · 발문·산출물)</span></td></tr>
+          <tr><td>⑤ $36$</td><td>오개념</td><td>$x^{2}=36$까지 세운 뒤 제곱근을 취하지 않고 $36$을 답으로 씀 → 「$x^{2}$의 값이 곧 $x$」로 마무리하는 습관 <span class="tag">(개념이 없다 · 근호)</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p class="verify"><strong>검산.</strong> 정답 $x^{2}=36 \Rightarrow x=6$(양수 조건으로 하나뿐) · ② $18\div2=9$ 재현 · ③ $(2+18)\div2=10$ 재현 · ④ $2+18=20$ 재현 · ⑤ $2\times18=36$ 재현 · 다섯 값 $6,9,10,20,36$ 전부 다름 · 등차 아님 · 정답 $6$은 발문에 없는 수.</p>
+      <p class="sig">with gangnamchat</p>
+    </article>
+
+    <p class="note">학생 답이 좌석값과 일치했다는 것과 그 길을 밟았다는 것은 다릅니다 — 반복과 확인이 그것을 뒷받침합니다.</p>
+  </div>
+</section>
+
+<!-- ══ 3. 패키지 ══════════════════════════════════════════════════════════ -->
+<section id="package" class="band">
+  <div class="wrap">
+    <h2>받으시는 것</h2>
+    <p class="claim">진단값 프롬프트 · 난이도 기준표 · 리포트 생성 규칙 · 예시 문항</p>
+
+    <ul class="cards">
+      <li class="card">
+        <h3>진단값 프롬프트</h3>
+        <p>선생님이 만든 수학 문제에 「진단값」을 심는 방법입니다.</p>
+      </li>
+      <li class="card">
+        <h3>난이도 기준표</h3>
+        <p>난이도 1~5를 선생님이 스스로 체크하는 한 장입니다.</p>
+      </li>
+      <li class="card">
+        <h3>리포트 생성 규칙</h3>
+        <p>시험이 끝나고 남은 답안지를 점수가 아니라 진단으로 읽는 규칙입니다.</p>
+      </li>
+      <li class="card">
+        <h3>예시 문항</h3>
+        <p>규칙대로 만들어진 문항이 실제로 어떻게 생겼는지 보여 주는 견본 다섯 개입니다.</p>
+      </li>
+    </ul>
+
+    <!--FORM:B-->
+  </div>
+</section>
+
+<!-- ══ 4. 강남챗 ══════════════════════════════════════════════════════════ -->
+<section id="app" class="band band--tint">
+  <div class="wrap">
+    <h2>강남챗</h2>
+    <p class="claim">이 방식이 자동으로 돌아가는 학생용 앱, 강남챗(특허 출원). <span class="badge">제품 검증 중</span></p>
+
+    <!-- 샘플 블록 배선: 본체 E2E 확정 후 · C2-010 -->
+    <ol class="flow">
+      <li><span class="flow__n">1</span> 등급 설정</li>
+      <li><span class="flow__n">2</span> 노드맵 진입 · 설정 등급 문제 풀이</li>
+      <li><span class="flow__n">3</span> 등급 재설정</li>
+      <li><span class="flow__n">4</span> 전체 모의고사 1회</li>
+      <li><span class="flow__n">5</span> 영역 진단 1회</li>
+      <li><span class="flow__n">6</span> 리포트</li>
+    </ol>
+
+    <p><a class="btn btn--ghost" href="【자리 · 발주자: Google Play 링크】">Google Play에서 보기</a></p>
+  </div>
+</section>
+
+<!-- ══ 5. 선언 ════════════════════════════════════════════════════════════ -->
+<section id="manifesto" class="band">
+  <div class="wrap">
+    <h2>선언</h2>
+    <p>수학 문제의 오답은 무작위가 아니다. 학생이 「부호를 놓쳤을 때」 도달하는 답, 「구간 끝을 확인하지 않았을 때」 도달하는 답은 정해져 있다. 그 답을 선지에 미리 심어 두면, 학생이 고른 오답 하나가 그 학생의 생각을 <strong>가리킨다.</strong> 우리는 이것을 <strong>진단값</strong>이라 부른다.</p>
+    <p>처음에는 치유가 자동으로 되지 않아도 좋다. 선생님이 진단서를 읽고 말로 짚어 주는 것만으로도, 학생은 「틀렸다」에서 「여기서 막혔다」로 옮겨 간다. 그것만으로 시험의 성격이 바뀐다.</p>
+    <p>강남챗은 진단값을 심는 방법과 그 답안을 읽는 방법을 <strong>모든 수학 선생님에게 무료로 공개</strong>한다. 선생님이 자기 문제에 진단값을 심으면, 그 시험은 그날부터 진단서가 된다. 문제를 만드는 기술은 공개하지 않는다 — 그것은 AI가 이미 잘하는 일이고, 우리의 것도 아니다. 우리가 공개하는 것은 <strong>시험을 읽는 방법</strong>이다.</p>
+
+    <details class="full">
+      <summary>선언문 전문 보기</summary>
+      <div class="full__body">
+        <h3>시험은 무엇을 재는가</h3>
+        <p>학생이 시험지 앞에서 보내는 100분은, 그 학생이 한 해 중 가장 집중해서 수학을 생각하는 시간이다. 그 시간의 결과를 우리는 숫자 하나로 접는다. 84점. 3등급. 그리고 다음 시험을 준비한다.</p>
+        <p>그 숫자는 학생이 <strong>무엇을 모르는지</strong> 말해주지 않는다. 16점을 잃은 이유가 계산 실수인지, 조건을 빠뜨린 것인지, 개념 자체를 거꾸로 알고 있는 것인지 — 시험지는 이미 알고 있다. 다만 아무도 그것을 읽지 않는다.</p>
+
+        <h3>오답은 말을 한다</h3>
+        <p>수학 문제의 오답은 무작위가 아니다. 학생이 「부호를 놓쳤을 때」 도달하는 답, 「구간 끝을 확인하지 않았을 때」 도달하는 답은 정해져 있다. 그 답을 선지에 미리 심어 두면, 학생이 고른 오답 하나가 그 학생의 생각을 <strong>가리킨다.</strong> 우리는 이것을 <strong>진단값</strong>이라 부른다.</p>
+        <p>오답 하나가 곧 진단은 아니다. 오답은 <strong>가능한 원인</strong>을 가리키고, 같은 오답이 여러 문제에서 반복되거나 짧은 확인 문제가 뒤따를 때 그 원인이 뒷받침되거나 반박된다. 진단값이 심긴 시험에서 오답은 감점 사유가 아니라 진단서의 첫 줄이다. 「이 학생은 이차함수의 최댓값을 구할 때 구간 끝을 확인하지 않는 것으로 보인다 — 두 문제에서 같은 답을 골랐다」 — 이 문장 하나가 84점보다 학생을 훨씬 멀리 데려간다.</p>
+
+        <h3>원인을 아는 것만으로도</h3>
+        <p>처음에는 치유가 자동으로 되지 않아도 좋다. 선생님이 진단서를 읽고 말로 짚어 주는 것만으로도, 학생은 「틀렸다」에서 「여기서 막혔다」로 옮겨 간다. 그것만으로 시험의 성격이 바뀐다.</p>
+        <p>그리고 수학의 문제점은 결국 문제로 극복한다. 진단된 원인에 맞는 문제를 다시 풀 때 치유가 일어난다. 강남챗 앱은 이 과정 — 진단하고, 원인에 맞는 문제를 고르고, 다시 재고, 확정하거나 기각하는 루프 — 을 자동화한 시스템이다(특허 출원 2026-07 · 제품 검증 중).</p>
+
+        <h3>우리가 하는 일</h3>
+        <p>강남챗은 진단값을 심는 방법과 그 답안을 읽는 방법을 <strong>모든 수학 선생님에게 무료로 공개</strong>한다. 선생님이 자기 문제에 진단값을 심으면, 그 시험은 그날부터 진단서가 된다. 문제를 만드는 기술은 공개하지 않는다 — 그것은 AI가 이미 잘하는 일이고, 우리의 것도 아니다. 우리가 공개하는 것은 <strong>시험을 읽는 방법</strong>이다.</p>
+        <p>우리는 이 방식이 강남의 한 학원, 한 앱에 머물기를 원하지 않는다. 시험이 진단이 되는 순간, 「몇 점이냐」는 질문은 「어디가 막혔느냐」로 바뀐다. 그 질문이 대한민국 교실의 기본 질문이 되기를 바란다.</p>
+
+        <h3>요청</h3>
+        <p>교육 당국과 공공 교육기관에 제안한다. 평가의 목적을 서열이 아니라 진단에 두는 시험 설계를, 시범적으로라도 함께 실험하자. 방법은 공개되어 있고, 도구는 무료이며, 결과는 학생 한 명 한 명에게 돌아간다.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ══ 6. 푸터 ════════════════════════════════════════════════════════════ -->
+<footer class="band band--foot">
+  <div class="wrap">
+    <p class="footline">
+      Claude API 기반 운용 ·
+      <a href="https://creativecommons.org/licenses/by-nd/4.0/deed.ko" rel="license noopener">CC BY-ND 4.0</a> ·
+      특허 출원 10-2026-0135592 ·
+      with gangnamchat ·
+      운영 강남챗 ·
+      <a href="mailto:【자리 · 발주자: 연락처 메일 주소】">문의</a>
+    </p>
+
+    <details id="privacy">
+      <summary>개인정보 수집·이용 안내</summary>
+      <!-- 【자리 · 발주자 확정】 아래 문안은 페이블 초안(지시서 01 §4-4)이다.
+           발주자 확정 전에는 배포하지 않는다 — 스모크 ④의 「【」 0건 검사가 이 주석과 본문을 잡는다(C2-066 · 의도된 게이트). -->
+      <div class="privacy__body">
+        <p><strong>개인정보 수집·이용 안내</strong> 【자리 · 발주자 확정】</p>
+        <p>수집 항목: 이메일 주소. 목적: 「진단값 프롬프트」 패키지의 전송 및 재전송. 보관 기간: 이 배포 서비스 종료 시까지 보관하며, 삭제를 요청하시면 즉시 삭제합니다. 처리 위탁: 이메일 전송을 위해 전송 서비스(Resend)에 위탁합니다. 동의를 거부하실 수 있으나 이 경우 패키지를 이메일로 받을 수 없습니다. 문의·삭제 요청: 【자리 · 발주자: 연락처】</p>
+      </div>
+    </details>
+  </div>
+</footer>
+
+<!--SCRIPT-->
+</body>
+</html>

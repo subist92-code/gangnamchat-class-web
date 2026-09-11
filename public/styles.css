@@ -1,0 +1,259 @@
+/* 강남챗 클래스 — 랜딩 1장
+ * 디자인 토큰 = CLAUDE.md §6 / 랜딩 v1.0 §3. 본문 720px 1열 · 모바일도 1열(카드 세로 쌓임).
+ * 명도 대비: 주색 #3E6FA8 on #FFF = 5.19:1 · on #FAF9F5 = 4.97:1 · 흰 글자 on 주색 = 5.19:1 (전부 ≥ 4.5:1)
+ */
+
+:root {
+  --bg:      #FAF9F5;   /* 배경 */
+  --tint:    #EDF2F8;   /* 틴트 — 구획 교대 */
+  --brand:   #3E6FA8;   /* 주색 */
+  --brand-h: #335C8D;   /* 호버 */
+  --ink:     #1F2328;
+  --ink-mid: #4A5058;
+  --line:    #DDD9D0;
+  --serif:  'Gowun Batang', 'Noto Serif KR', serif;
+  --sans:   'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: clamp(15px, 0.95rem + 0.2vw, 17px);
+  line-height: 1.85;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* ── 구획 · 폭 ─────────────────────────────────────────────────────────── */
+.band { padding: clamp(3rem, 8vw, 5.5rem) 1.25rem; }
+.band--tint { background: var(--tint); }
+.band--foot { background: #fff; border-top: 1px solid var(--line); padding-block: 2.5rem; }
+.wrap { max-width: 720px; margin: 0 auto; }
+
+/* ── 글자 ──────────────────────────────────────────────────────────────── */
+h1, h2, h3, .lede, .bignum, .claim, #manifesto p, .full__body p, summary {
+  font-family: var(--serif);
+}
+
+h1 {
+  font-size: clamp(2.1rem, 1.4rem + 3.4vw, 3.2rem);
+  line-height: 1.3;
+  margin: 0 0 .75rem;
+  letter-spacing: -.01em;
+}
+h2 {
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.7rem);
+  margin: 0 0 1.25rem;
+  color: var(--brand-h);
+}
+h3 { font-size: 1.08rem; margin: 0 0 .4rem; }
+
+p { margin: 0 0 1.15rem; }
+.wrap > p:last-child { margin-bottom: 0; }
+
+.lede { font-size: clamp(1.02rem, .95rem + .5vw, 1.2rem); color: var(--ink-mid); margin-bottom: 2rem; }
+.claim { font-size: clamp(1.05rem, 1rem + .5vw, 1.25rem); line-height: 1.75; }
+.note { color: var(--ink-mid); font-size: .94rem; border-left: 3px solid var(--brand); padding-left: .9rem; }
+
+.bignum { line-height: 1.2; margin-bottom: 2rem; }
+.bignum strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(4.5rem, 3rem + 12vw, 8rem);
+  color: var(--brand);
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+.bignum span { display: block; font-family: var(--serif); font-size: clamp(1.05rem, 1rem + .6vw, 1.35rem); margin-top: .5rem; }
+
+.badge {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: .78rem;
+  line-height: 1.6;
+  padding: .05rem .55rem;
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  color: var(--brand-h);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ── 카드 ──────────────────────────────────────────────────────────────── */
+.cards { list-style: none; margin: 0 0 2.25rem; padding: 0; display: grid; gap: 1rem; }
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.15rem 1.25rem;
+}
+.card p { margin: 0; color: var(--ink-mid); font-size: .95rem; }
+.card h3 { color: var(--brand-h); }
+
+.card--example { margin: 0 0 1.5rem; padding: 1.4rem 1.35rem 1.1rem; }
+.card__kicker {
+  font-size: .8rem !important;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--brand) !important;
+  margin-bottom: .9rem !important;
+}
+.card--example .q,
+.card--example .choices,
+.card--example .answer,
+.card--example .verify { margin: 0 0 .85rem; color: var(--ink); font-size: .97rem; }
+.card--example .choices { letter-spacing: .02em; }
+.card--example .verify { font-size: .87rem; color: var(--ink-mid); line-height: 1.75; }
+.sig { margin: 0 !important; font-size: .8rem !important; color: var(--ink-mid) !important; text-align: right; }
+
+/* ── 좌석표 ────────────────────────────────────────────────────────────── */
+.tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+.seats { border-collapse: collapse; width: 100%; min-width: 460px; font-size: .88rem; }
+.seats caption { text-align: left; font-size: .8rem; color: var(--ink-mid); padding-bottom: .4rem; }
+.seats th, .seats td { border-top: 1px solid var(--line); padding: .55rem .5rem; text-align: left; vertical-align: top; line-height: 1.7; }
+.seats thead th { border-top: 0; border-bottom: 2px solid var(--brand); color: var(--brand-h); font-weight: 700; white-space: nowrap; }
+.seats td:first-child, .seats td:nth-child(2) { white-space: nowrap; }
+.seats .seat--primary { background: var(--tint); }
+.seats .tag { display: inline-block; color: var(--ink-mid); font-size: .95em; }
+
+/* ── 흐름 카드 ─────────────────────────────────────────────────────────── */
+.flow { list-style: none; margin: 0 0 1.75rem; padding: 0; display: grid; gap: .5rem; counter-reset: none; }
+.flow li {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: .7rem .9rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .95rem;
+}
+.flow__n {
+  flex: none;
+  width: 1.7rem; height: 1.7rem;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: .85rem;
+  display: grid; place-items: center;
+}
+
+/* ── 폼 ────────────────────────────────────────────────────────────────── */
+.cta {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  display: grid;
+  gap: .8rem;
+  margin: 0;
+}
+.cta__email { display: grid; gap: .35rem; font-size: .88rem; color: var(--ink-mid); }
+.cta input[type=email] {
+  font: inherit;
+  font-size: 1rem;
+  padding: .6rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+}
+.cta input[type=email]:focus-visible,
+.cta input[type=checkbox]:focus-visible,
+.cta button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+.consent { display: flex; gap: .5rem; align-items: flex-start; font-size: .88rem; color: var(--ink-mid); line-height: 1.6; }
+.consent input { margin-top: .38rem; flex: none; width: 1rem; height: 1rem; accent-color: var(--brand); }
+.cta button[type=submit] {
+  font: inherit;
+  font-weight: 700;
+  background: var(--brand);
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: .75rem 1rem;
+  cursor: pointer;
+}
+.cta button[type=submit]:hover { background: var(--brand-h); }
+.cta button[type=submit][disabled] { opacity: .6; cursor: progress; }
+
+/* 허니팟 — 사람 눈과 보조기술 모두에서 빼고, 봇만 채우게 둔다 */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+.msg { margin: 0; font-size: .9rem; line-height: 1.7; }
+.msg:empty { display: none; }
+.msg--ok { color: var(--brand-h); }
+.msg--err { color: #A23B32; }
+.again {
+  justify-self: start;
+  font: inherit;
+  font-size: .9rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--brand);
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* 보냈습니다 = 폼 자리에 메시지로 교체(페이지 이동 없음 · 랜딩 v1.0 §2) */
+.cta--sent .cta__email,
+.cta--sent .consent,
+.cta--sent button[type=submit] { display: none; }
+
+/* ── 링크 · 버튼 ───────────────────────────────────────────────────────── */
+a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--brand-h); }
+.btn {
+  display: inline-block;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: .65rem 1.1rem;
+}
+.btn--ghost { border: 1px solid var(--brand); color: var(--brand-h); background: #fff; }
+.btn--ghost:hover { background: var(--brand); color: #fff; }
+
+/* ── 접힘 ──────────────────────────────────────────────────────────────── */
+details { border-top: 1px solid var(--line); padding-top: 1rem; }
+summary { cursor: pointer; color: var(--brand-h); font-size: 1rem; }
+.full { margin-top: 2rem; }
+.full__body { padding-top: .75rem; }
+.full__body h3 { font-family: var(--serif); color: var(--brand-h); margin-top: 1.75rem; }
+.full__body h3:first-child { margin-top: .5rem; }
+
+#privacy { margin-top: 1.25rem; }
+.privacy__body { padding-top: .6rem; font-size: .88rem; color: var(--ink-mid); }
+
+.footline { font-size: .86rem; color: var(--ink-mid); line-height: 2; margin-bottom: 0; }
+
+/* ── 수식 ──────────────────────────────────────────────────────────────── */
+.katex { font-size: 1.02em; }
+
+/* ── 인쇄 — 접힘 전개 · 폼 숨김(Q-L-3) ─────────────────────────────────── */
+@media print {
+  body { background: #fff; font-size: 10.5pt; }
+  .band { padding: 1rem 0; background: #fff !important; }
+  .band--foot { border-top: 1px solid #ccc; }
+  .cta, .btn, .again { display: none !important; }
+  details { border-top: 0; }
+  details > div, .full__body { display: block !important; }
+  summary { list-style: none; font-weight: 700; }
+  details:not([open]) > *:not(summary) { display: block !important; }
+  .card, .flow li { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
