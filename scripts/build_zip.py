@@ -180,7 +180,7 @@ def main():
     md5 = hashlib.md5(data).hexdigest()
     # 기록 파일 이름 = 지시서 02(2기) v2.0 §2-1 `gangnamchat-class-v1_1.md5`
     # (구판 v1_0 은 `…v1_0.zip.md5` 로 남아 있다 — 이미 공시한 이름이라 바꾸지 않는다)
-    (out_dir / (Path(ZIP_NAME).stem + ".md5")).write_text(f"{md5}  {ZIP_NAME}\n", encoding="utf-8")
+    (out_dir / (Path(ZIP_NAME).stem + ".md5")).write_text(f"{md5}  {ZIP_NAME}\n", encoding="utf-8", newline="\n")
 
     print("\n── zip ──────────────────────────────────────────────────────")
     print(f"  이름   : {zip_path}")

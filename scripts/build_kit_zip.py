@@ -186,14 +186,15 @@ def main():
     blob = zip_path.read_bytes()
     md5 = hashlib.md5(blob).hexdigest()
     # 기록 파일 이름 = 지시서 02(2기) v2.0 §2-2 `gangnamchat-teacher-kit-v1_1.md5`
-    (out_dir / (Path(ZIP_NAME).stem + ".md5")).write_text(f"{md5}  {ZIP_NAME}\n", encoding="utf-8")
+    # newline="\n" — Windows 에서 write_text 가 CRLF 로 바꾸면 로컬 산출물이 Pages 빌드(LF)와 바이트가 달라진다
+    (out_dir / (Path(ZIP_NAME).stem + ".md5")).write_text(f"{md5}  {ZIP_NAME}\n", encoding="utf-8", newline="\n")
 
     if args.guide_out:
         start_rel = "00_시작하기.txt"
         replaced = next(data for rel, data, _ in members if rel == start_rel)
         src_md5 = hashlib.md5((src / start_rel).read_bytes()).hexdigest()
         text = replaced[len(BOM):].decode("utf-8") if replaced.startswith(BOM) else replaced.decode("utf-8")
-        Path(args.guide_out).write_text(guide_html(text, src_md5), encoding="utf-8")
+        Path(args.guide_out).write_text(guide_html(text, src_md5), encoding="utf-8", newline="\n")
         print(f"  guide  : {args.guide_out} ← {start_rel}(교체 후 · 원본 md5 {src_md5})")
 
     unchanged = sum(1 for m in members if m[2] == "그대로")
