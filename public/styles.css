@@ -113,7 +113,8 @@ p { margin: 0 0 1.15rem; }
 .sig { margin: 0 !important; font-size: .8rem !important; color: var(--ink-mid) !important; text-align: right; }
 
 /* ── 좌석표 ────────────────────────────────────────────────────────────── */
-.tablewrap { overflow-x: auto; margin: 0 0 1rem; }
+/* position:relative — 표 안 KaTeX .katex-mathml(absolute)이 스크롤 상자 밖으로 새어 문서 폭을 넓히지 않게 */
+.tablewrap { position: relative; overflow-x: auto; margin: 0 0 1rem; }
 .seats { border-collapse: collapse; width: 100%; min-width: 460px; font-size: .88rem; }
 .seats caption { text-align: left; font-size: .8rem; color: var(--ink-mid); padding-bottom: .4rem; }
 .seats th, .seats td { border-top: 1px solid var(--line); padding: .55rem .5rem; text-align: left; vertical-align: top; line-height: 1.7; }

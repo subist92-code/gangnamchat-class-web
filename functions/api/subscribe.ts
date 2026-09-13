@@ -106,10 +106,15 @@ function seoulDayStartIso(now = new Date()): string {
   return new Date(midnightSeoulAsUtc - KST_OFFSET_MS).toISOString();
 }
 
+/**
+ * 새 키 체계의 secret 키(sb_secret_…)는 JWT가 아니다 — `apikey` 헤더에만 싣는다.
+ * `Authorization: Bearer <secret 키>`를 함께 보내면 게이트웨이가 그대로 넘기고
+ * PostgREST 가 401 PGRST303 으로 거절한다(S5 1차 · 09-13 로그 실측).
+ * apikey 만 보내면 게이트웨이가 service_role JWT 를 넣어 준다.
+ */
 function restHeaders(env: Env): Record<string, string> {
   return {
     apikey: env.SUPABASE_SECRET_KEY,
-    Authorization: `Bearer ${env.SUPABASE_SECRET_KEY}`,
     'Content-Type': 'application/json',
   };
 }
