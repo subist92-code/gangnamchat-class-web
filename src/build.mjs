@@ -1,7 +1,8 @@
 // build.mjs — src/index.template.html → public/index.html
 //
-// 하는 일 네 가지 (구현 지시서 01(2기) §4-2 · §4-3)
-//   ① 폼 A·B 주입 — 두 폼은 완전히 같은 마크업이고 data-cta 만 다르다(§4-2).
+// 하는 일 네 가지 (구현 지시서 01(2기) §4-2 · §4-3 · 02(2기) v2.0 §3)
+//   ① 폼 A·B·C 주입 — 세 폼은 완전히 같은 마크업이고 cta 값과 버튼 문구만 다르다(02 §3-5).
+//      + #kit-guide 본문 주입 — src/kit-guide.html(킷 원문에서 build_kit_zip.py 가 뽑은 조각 · 손으로 고치지 않는다).
 //   ② 인라인 <script> 1개 주입 — 외부 스크립트 0.
 //   ③ $…$ · $$…$$ 를 KaTeX로 **빌드 시** HTML로 굽는다. 런타임 KaTeX JS 없음.
 //   ④ KaTeX CSS·폰트를 public/katex/ 로 self-host 하고, 인라인 스크립트의 sha256을
@@ -21,7 +22,13 @@ const KATEX_SRC = path.join(ROOT, 'node_modules', 'katex', 'dist');
 const KATEX_DST = path.join(ROOT, 'public', 'katex');
 
 // ── ① 폼 ─────────────────────────────────────────────────────────────────
-// 지시서 §4-2 의 마크업 그대로. 허니팟 `website` 는 사람에게 보이지 않고 봇만 채운다.
+// 지시서 01 §4-2 의 마크업 그대로. 허니팟 `website` 는 사람에게 보이지 않고 봇만 채운다.
+// cta 는 hidden 값으로 싣는다(02 §3-5) — JS 가 죽은 일반 POST 에서도 어느 폼인지가 함께 간다.
+const BUTTON = {
+  A: '미끼값 프롬프트 받기',   // 선언문 v1.3 §3 CTA · 랜딩 v1.1 §1
+  B: '미끼값 프롬프트 받기',
+  C: '교사용 킷 받기',         // 랜딩 v1.1 §1 구획 3-1
+};
 const form = (cta) => `<form class="cta" method="post" action="/api/subscribe" data-cta="${cta}">
       <label class="cta__email">이메일
         <input type="email" name="email" required autocomplete="email" inputmode="email" placeholder="teacher@example.com">
@@ -31,7 +38,8 @@ const form = (cta) => `<form class="cta" method="post" action="/api/subscribe" d
         <span>개인정보 수집·이용에 동의합니다 <a href="#privacy">자세히</a></span>
       </label>
       <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
-      <button type="submit">진단값 프롬프트 받기</button>
+      <input type="hidden" name="cta" value="${cta}">
+      <button type="submit">${BUTTON[cta]}</button>
       <p class="msg" role="status" aria-live="polite"></p>
     </form>`;
 
@@ -72,7 +80,6 @@ const SCRIPT_BODY = `
       var button = form.querySelector('button[type=submit]');
       button.disabled = true;
       var payload = new FormData(form);
-      payload.append('cta', form.getAttribute('data-cta') || '');
       fetch(form.action, {
         method: 'POST',
         headers: { 'Accept': 'application/json' },
@@ -88,6 +95,15 @@ const SCRIPT_BODY = `
       });
     });
   });
+
+  // 메일의 「사용 안내」 링크(#kit-guide)로 들어오면 접힘을 연다 — 앵커가 details 자신이면 브라우저가 열지 않는다.
+  function openTarget() {
+    var id = location.hash.slice(1);
+    var el = id && document.getElementById(id);
+    if (el && el.tagName === 'DETAILS') el.open = true;
+  }
+  openTarget();
+  window.addEventListener('hashchange', openTarget);
 })();
 `;
 
@@ -147,10 +163,16 @@ function copyKatex() {
 // ── 조립 ─────────────────────────────────────────────────────────────────
 let html = fs.readFileSync(TPL, 'utf8');
 
-if (!html.includes('<!--FORM:A-->') || !html.includes('<!--FORM:B-->') || !html.includes('<!--SCRIPT-->')) {
-  throw new Error('템플릿에 FORM:A / FORM:B / SCRIPT 자리가 없다.');
+for (const slot of ['<!--FORM:A-->', '<!--FORM:B-->', '<!--FORM:C-->', '<!--KIT_GUIDE-->', '<!--SCRIPT-->']) {
+  if (html.split(slot).length !== 2) throw new Error(`템플릿에 ${slot} 자리가 정확히 1개가 아니다.`);
 }
-html = html.replace('<!--FORM:A-->', form('A')).replace('<!--FORM:B-->', form('B'));
+const KIT_GUIDE = fs.readFileSync(path.join(ROOT, 'src', 'kit-guide.html'), 'utf8');
+if (KIT_GUIDE.includes('$')) throw new Error('kit-guide.html 에 $ 가 있다 — 수식 구분자와 충돌한다.');
+html = html
+  .replace('<!--FORM:A-->', form('A'))
+  .replace('<!--FORM:B-->', form('B'))
+  .replace('<!--FORM:C-->', form('C'))
+  .replace('<!--KIT_GUIDE-->', KIT_GUIDE.trim());
 html = renderMath(html);
 
 const scriptHash = crypto.createHash('sha256').update(SCRIPT_BODY, 'utf8').digest('base64');

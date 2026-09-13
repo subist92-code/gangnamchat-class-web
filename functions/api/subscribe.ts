@@ -1,7 +1,8 @@
 /**
- * functions/api/subscribe.ts — Cloudflare Pages Function 1개 (구현 지시서 01(2기) §5)
+ * functions/api/subscribe.ts — Cloudflare Pages Function 1개 (구현 지시서 01(2기) §5 · 02(2기) v2.0 §4)
  *
- * 하는 일: 이메일을 받고, 한 행을 저장하고, 패키지 링크를 메일로 보낸다. 그 외에는 아무것도 하지 않는다.
+ * 하는 일: 이메일을 받고, 한 행을 저장하고, 배포물 링크 2개(패키지 · 교사용 킷)를 메일 1통으로 보낸다.
+ * 그 외에는 아무것도 하지 않는다. 두 zip 은 합치지 않는다(C2-100) — 링크만 두 개다.
  *
  * 서버가 보유하는 것 (C2-065 · CLAUDE.md §6)
  *   email · consented_at · sent_at · ip_hash(해시만) · cta — 그 외 0.
@@ -18,6 +19,7 @@ interface Env {
   RESEND_API_KEY: string;
   MAIL_FROM: string;
   PACKAGE_URL: string;
+  KIT_URL: string;
   RATE_EMAIL_PER_DAY: string;
   RATE_IP_PER_DAY: string;
   IP_HASH_SALT: string;
@@ -36,32 +38,66 @@ const MSG = {
   down: '지금은 보낼 수 없습니다. 잠시 후 다시 시도해 주세요.',
 } as const;
 
-const SUBJECT = '강남챗 클래스 — 진단값 프롬프트 패키지';
+type Cta = 'A' | 'B' | 'C';
 
-// ── 메일 본문 (§5-4 · 텍스트와 HTML이 같은 내용) ───────────────────────────
-const mailText = (url: string) => `오답은 말을 합니다.
+// 제목 — 폼 C(교사용 킷 구획)만 킷 제목 · 그 외(A·B·값 없음) 패키지 제목 (§4 · 랜딩 v1.1 §2)
+const subjectFor = (cta: Cta | null) =>
+  cta === 'C' ? '강남챗 클래스 — 교사용 킷' : '강남챗 클래스 — 미끼값 프롬프트 패키지';
 
-요청하신 「진단값 프롬프트」 패키지입니다.
-받으시는 것: 진단값 프롬프트 · 난이도 기준표 · 리포트 생성 규칙 · 예시 문항
+const KIT_GUIDE_URL = 'https://class.gangnamchat.com/#kit-guide';
 
-내려받기: ${url}
+// ── 메일 본문 (지시서 02(2기) v2.0 §4-1 · 텍스트와 HTML이 같은 내용) ─────────
+// 블록 두 개. 요청한 쪽을 위에 둔다 — 폼 C 는 두 블록의 순서만 바꾼다(§4-1 · C2-105 ⓓ).
+// 문안은 지시서 §4-1 글자 그대로다. 고칠 일이 생기면 지시서·대장을 먼저 고친다.
+type Block = { lines: string[]; url: string; guide?: string };
 
-쓰는 법은 압축을 풀고 README부터 읽어 주세요. 라이선스 CC BY-ND 4.0 — 출처를 밝히면 자유롭게 배포할 수 있고, 수정본 배포는 하지 않습니다.
+function blocks(env: Env, cta: Cta | null): Block[] {
+  const pkg: Block = {
+    lines: [
+      '요청하신 「미끼값 프롬프트」 패키지입니다.',
+      '받으시는 것: 미끼값 프롬프트 · 난이도 기준표 · 리포트 생성 규칙 · 예시 문항',
+    ],
+    url: env.PACKAGE_URL,
+  };
+  const kit: Block = {
+    lines: [
+      '문제를 직접 만드시는 분께 — 교사용 킷도 함께 보내 드립니다.',
+      '저작·검수·고난도 설계·오개념 참고사전. 쓰는 법은 아래 안내를 보세요.',
+    ],
+    url: env.KIT_URL,
+    guide: KIT_GUIDE_URL,
+  };
+  return cta === 'C' ? [kit, pkg] : [pkg, kit];
+}
 
-with gangnamchat
-class.gangnamchat.com
-`;
+const CLOSING = [
+  '두 자료는 따로입니다. 시험을 읽는 법이 먼저이고, 문제를 만드는 도구가 그다음입니다.',
+  '라이선스 CC BY-ND 4.0 — 출처를 밝히면 자유롭게 배포할 수 있고, 수정본 배포는 하지 않습니다.',
+];
 
-const mailHtml = (url: string) => `<!doctype html><html lang="ko"><meta charset="utf-8">
+function mailText(env: Env, cta: Cta | null): string {
+  const parts = blocks(env, cta).map((b) =>
+    [...b.lines, `내려받기: ${b.url}`, ...(b.guide ? [`사용 안내: ${b.guide}`] : [])].join('\n'));
+  return ['오답은 말을 합니다.', ...parts, ...CLOSING, 'with gangnamchat\nclass.gangnamchat.com'].join('\n\n') + '\n';
+}
+
+const esc = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function mailHtml(env: Env, cta: Cta | null): string {
+  const link = (label: string, url: string) =>
+    `${label}: <a href="${esc(url)}" style="color:#3E6FA8">${esc(url)}</a>`;
+  const parts = blocks(env, cta).map((b) =>
+    `<p>${[...b.lines.map(esc), link('내려받기', b.url), ...(b.guide ? [link('사용 안내', b.guide)] : [])].join('<br>\n')}</p>`);
+  return `<!doctype html><html lang="ko"><meta charset="utf-8">
 <body style="margin:0;padding:24px;background:#FAF9F5;color:#1F2328;font:16px/1.8 -apple-system,'Segoe UI',sans-serif">
 <div style="max-width:560px;margin:0 auto">
 <p style="font-size:20px;margin:0 0 20px">오답은 말을 합니다.</p>
-<p>요청하신 「진단값 프롬프트」 패키지입니다.<br>
-받으시는 것: 진단값 프롬프트 · 난이도 기준표 · 리포트 생성 규칙 · 예시 문항</p>
-<p><a href="${url}" style="color:#3E6FA8">내려받기: ${url}</a></p>
-<p>쓰는 법은 압축을 풀고 README부터 읽어 주세요. 라이선스 CC BY-ND 4.0 — 출처를 밝히면 자유롭게 배포할 수 있고, 수정본 배포는 하지 않습니다.</p>
+${parts.join('\n')}
+${CLOSING.map((c) => `<p>${esc(c)}</p>`).join('\n')}
 <p style="color:#4A5058;font-size:14px">with gangnamchat<br>class.gangnamchat.com</p>
 </div></body></html>`;
+}
 
 // ── 응답 ───────────────────────────────────────────────────────────────────
 function respond(request: Request, status: number, message: string, ok: boolean): Response {
@@ -143,7 +179,7 @@ async function handlePost(context: EventContext<Env>): Promise<Response> {
   // 설정값이 없으면 동작하지 않는다 — 기본값을 코드에 박아 두지 않는다(P-9 · 임시 땜질 금지).
   const required: (keyof Env)[] = [
     'SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'RESEND_API_KEY', 'MAIL_FROM',
-    'PACKAGE_URL', 'RATE_EMAIL_PER_DAY', 'RATE_IP_PER_DAY', 'IP_HASH_SALT',
+    'PACKAGE_URL', 'KIT_URL', 'RATE_EMAIL_PER_DAY', 'RATE_IP_PER_DAY', 'IP_HASH_SALT',
   ];
   const missing = required.filter((k) => !env[k]);
   if (missing.length) {
@@ -192,7 +228,8 @@ async function handlePost(context: EventContext<Env>): Promise<Response> {
   if (consent !== 'on' && consent !== 'true' && consent !== '1') {
     return respond(request, 400, MSG.noConsent, false);
   }
-  const ctaValue = cta === 'A' || cta === 'B' ? cta : null;
+  // 'A'·'B'·'C' 외의 값은 null 로 저장한다(스키마 변경 없음 · text 열 · C2-105 ⓕ)
+  const ctaValue: Cta | null = cta === 'A' || cta === 'B' || cta === 'C' ? cta : null;
 
   // ③ 레이트 리밋
   const ip = request.headers.get('CF-Connecting-IP')
@@ -245,9 +282,9 @@ async function handlePost(context: EventContext<Env>): Promise<Response> {
       body: JSON.stringify({
         from: env.MAIL_FROM,
         to: [email],
-        subject: SUBJECT,
-        text: mailText(env.PACKAGE_URL),
-        html: mailHtml(env.PACKAGE_URL),
+        subject: subjectFor(ctaValue),
+        text: mailText(env, ctaValue),
+        html: mailHtml(env, ctaValue),
       }),
     });
     // ⑥ 오류 본문은 남기지 않는다 — 상태 코드만.
